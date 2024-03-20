@@ -6,24 +6,28 @@ import 'package:admin_attendancesystem_nodejs/common/colors/color.dart';
 import 'package:admin_attendancesystem_nodejs/models/Class.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CreateNewLectuer.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CreateNewStudent.dart';
+import 'package:admin_attendancesystem_nodejs/screens/Home/Test/ClassTestPage.dart';
+import 'package:admin_attendancesystem_nodejs/screens/Home/Test/CourseTestPage.dart';
+import 'package:admin_attendancesystem_nodejs/screens/Home/Test/CreateNewClass.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/Test/LectuerTestPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/LectuersPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/NotificationPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/SettingPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/StudentsPage.dart';
+import 'package:admin_attendancesystem_nodejs/screens/Home/Test/StudentTestPage.dart';
 import 'package:admin_attendancesystem_nodejs/services/API.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:html' as html;
 
-class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+class HomePageTest extends StatefulWidget {
+  const HomePageTest({Key? key}) : super(key: key);
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomePageTest> createState() => _HomePageTestState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageTestState extends State<HomePageTest> {
   TextEditingController searchController = TextEditingController();
   bool checkHome = true;
   bool checkNotification = false;
@@ -276,15 +280,13 @@ class _HomePageState extends State<HomePage> {
           checkLectuers = false;
           checkStudents = false;
           checkSettings = false;
-          if (title == 'Home') {
+          if (title == 'Lectuers') {
             checkHome = true;
-          } else if (title == 'Notifications') {
+          } else if (title == 'Course') {
             checkNotification = true;
-          } else if (title == 'Lectuers') {
-            checkLectuers = true;
-          } else if (title == 'Students') {
+          }  else if (title == 'Students') {
             checkStudents = true;
-          } else if (title == 'Settings') {
+          } else if (title == 'Classes') {
             checkSettings = true;
           }
         });
@@ -339,30 +341,25 @@ class _HomePageState extends State<HomePage> {
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
                 color: AppColors.secondaryText),
-            itemHeader('Home', const Icon(Icons.home_outlined), checkHome),
-            const CustomText(
-                message: 'Analyze',
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: AppColors.secondaryText),
-            itemHeader('Notifications',
+            itemHeader('Lectuers', const Icon(Icons.home_outlined), checkHome),
+
+            itemHeader('Course',
                 const Icon(Icons.notifications_outlined), checkNotification),
-            const CustomText(
-                message: 'Manage',
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: AppColors.secondaryText),
-            itemHeader('Lectuers', const Icon(Icons.cloud_download_outlined),
-                checkLectuers),
+            // const CustomText(
+            //     message: 'Manage',
+            //     fontSize: 12,
+            //     fontWeight: FontWeight.bold,
+            //     color: AppColors.secondaryText),
+
             itemHeader('Students', const Icon(Icons.calendar_month_outlined),
                 checkStudents),
-            const CustomText(
-                message: 'Personal',
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: AppColors.secondaryText),
+            // const CustomText(
+            //     message: 'Personal',
+            //     fontSize: 12,
+            //     fontWeight: FontWeight.bold,
+            //     color: AppColors.secondaryText),
             itemHeader(
-                'Settings', const Icon(Icons.settings_outlined), checkSettings),
+                'Classes', const Icon(Icons.settings_outlined), checkSettings),
           ],
         ),
       ),
@@ -371,18 +368,16 @@ class _HomePageState extends State<HomePage> {
 
   Widget selectedPage() {
     if (checkHome) {
-      return LectuersTestPage();
+      return CreateNewClass();
     } else if (checkNotification) {
       // html.window.history.pushState({}, 'Notification', '/Detail/Notification');
-      return const NotificationPage();
-    } else if (checkLectuers) {
-      return  LectuersTestPage();
+      return const CourseTestPage();
     } else if (checkStudents) {
-      return const StudentsPage();
+      return const StudentTestPage();
     } else if (checkSettings) {
-      return const SettingPage();
+      return const CreateNewClass();
     } else {
-      return containerHome();
+      return CreateNewClass();
     }
   }
 
