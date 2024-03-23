@@ -1,11 +1,16 @@
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:admin_attendancesystem_nodejs/common/base/CustomButton.dart';
 import 'package:admin_attendancesystem_nodejs/common/base/CustomText.dart';
 import 'package:admin_attendancesystem_nodejs/common/colors/color.dart';
+import 'package:admin_attendancesystem_nodejs/models/StudentPage/Student.dart';
 import 'package:admin_attendancesystem_nodejs/models/test/StudentTest.dart';
 import 'package:admin_attendancesystem_nodejs/models/test/StudentTest.dart';
+import 'package:admin_attendancesystem_nodejs/services/API.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
 
 class StudentsPage extends StatefulWidget {
   const StudentsPage({super.key});
@@ -18,9 +23,26 @@ class _StudentsPageState extends State<StudentsPage> {
   TextEditingController searchInDashboardController = TextEditingController();
   int currentPage = 0;
   int studentsPerPage = 10;
-  List<StudentTest> listData = StudentTest.listData();
-  List<StudentTest> listTemp = [];
-  List<StudentTest> searchResult = [];
+  List<Student> listData = [];
+  List<Student> listTemp = [];
+  List<Student> searchResult = [];
+  // List<StudentTest> listData = StudentTest.listData();
+  // List<StudentTest> listTemp = [];
+  // List<StudentTest> searchResult = [];
+  late Future<List<Student>> _fetchListStudent;
+  late ProgressDialog _progressDialog;
+  Uint8List? _excelBytes;
+  String fileName = '';
+
+  void fetchData() async {
+    _fetchListStudent = API().getStudent();
+    _fetchListStudent.then((value) {
+      setState(() {
+        listData = value;
+        listTemp = value;
+      });
+    });
+  }
 
   void searchTextChanged(String query) {
     searchResult.clear();
@@ -30,21 +52,16 @@ class _StudentsPageState extends State<StudentsPage> {
       });
       return;
     }
-    List<StudentTest> temp = listData;
+    List<Student> temp = listData;
     for (var element in temp) {
-      if (element.teacherEmail.contains(query) ||
-          element.teacherEmail.toLowerCase().trim() ==
+      if (element.studentEmail.contains(query) ||
+          element.studentEmail.toLowerCase().trim() ==
               query.toLowerCase().trim() ||
-          element.teacherName.contains(query) ||
-          element.teacherName.toLowerCase().trim() ==
+          element.studentName.contains(query) ||
+          element.studentName.toLowerCase().trim() ==
               query.toLowerCase().trim() ||
-          element.teacherID.contains(query) ||
-          element.teacherID.toLowerCase().trim() ==
-              query.toLowerCase().trim() ||
-          element.faculty.contains(query) ||
-          element.faculty.toLowerCase().trim() == query.toLowerCase().trim() ||
-          element.phoneNumber.contains(query) ||
-          element.phoneNumber.toLowerCase().trim() ==
+          element.studentID.contains(query) ||
+          element.studentID.toLowerCase().trim() ==
               query.toLowerCase().trim()) {
         searchResult.add(element);
       }
@@ -56,11 +73,140 @@ class _StudentsPageState extends State<StudentsPage> {
     });
   }
 
+  Future<void> _selectFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['xlsx', 'xls'],
+    );
+
+    if (result != null) {
+      setState(() {
+        _excelBytes = result.files.single.bytes;
+        fileName = result.files.single.name!;
+      });
+    }
+  }
+
+  Future<void> _uploadFile() async {
+    if (_excelBytes == null) {
+      // Fluttertoast.showToast(msg: 'Please select a file to upload');
+      print('null');
+      return;
+    }
+    try {
+      _progressDialog.show();
+      var response = await API().uploadExcelStudent(_excelBytes!);
+      print('response: $response');
+      if (response!.isNotEmpty ) {
+        await _progressDialog.hide();
+        if (mounted) {
+          await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Upload Excel"),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Upload file excel to server successfully"),
+                    const SizedBox(height: 8),
+                    Text(
+                      fileName,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text("OK"),
+                    onPressed: () {
+                      setState(() {
+                        fileName = '';
+                        listTemp.addAll(response);
+                      });
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
+
+        print('ok');
+      } else {
+        await _progressDialog.hide();
+        if (mounted) {
+          await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Upload Excel"),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Failed upload file excel to server "),
+                    const SizedBox(height: 8),
+                    Text(
+                      fileName,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text("OK"),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
+
+        print('failed');
+      }
+    } catch (e) {
+      print('error');
+    }
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    listTemp = listData;
+    fetchData();
+    _progressDialog = ProgressDialog(context,
+        customBody: Container(
+          width: 200,
+          height: 150,
+          decoration: const BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(5)),
+              color: Colors.white),
+          child: const Center(
+              child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(
+                color: AppColors.primaryButton,
+              ),
+              SizedBox(
+                height: 5,
+              ),
+              Text(
+                'Loading',
+                style: TextStyle(
+                    fontSize: 16,
+                    color: AppColors.primaryText,
+                    fontWeight: FontWeight.w500),
+              ),
+            ],
+          )),
+        ));
   }
 
   @override
@@ -90,9 +236,14 @@ class _StudentsPageState extends State<StudentsPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  customButtonDashBoard('Import'),
-                  customButtonDashBoard('PDF'),
-                  customButtonDashBoard('Excel'),
+                  customButtonDashBoard('Import Excel'),
+                  _excelBytes != null
+                      ? Text(
+                          fileName,
+                          overflow: TextOverflow.ellipsis,
+                        )
+                      : Container(),
+                  customButtonUploadFile('Upload'),
                   const SizedBox(
                     width: 20,
                   ),
@@ -213,7 +364,7 @@ class _StudentsPageState extends State<StudentsPage> {
     );
   }
 
-  Table tableAttendance(List<StudentTest> studentAttendance) {
+  Table tableAttendance(List<Student> studentAttendance) {
     int startIndex = currentPage * studentsPerPage;
     int endIndex =
         min((currentPage + 1) * studentsPerPage, studentAttendance.length);
@@ -361,7 +512,7 @@ class _StudentsPageState extends State<StudentsPage> {
                   padding: const EdgeInsets.all(5),
                   child: Center(
                     child: CustomText(
-                        message: studentAttendance[i].teacherID,
+                        message: studentAttendance[i].studentID,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: Colors.black),
@@ -374,7 +525,7 @@ class _StudentsPageState extends State<StudentsPage> {
                   color: Colors.white,
                   child: Center(
                     child: CustomText(
-                        message: studentAttendance[i].teacherName,
+                        message: studentAttendance[i].studentName,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: Colors.black),
@@ -387,7 +538,7 @@ class _StudentsPageState extends State<StudentsPage> {
                   color: Colors.white,
                   child: Center(
                     child: CustomText(
-                        message: studentAttendance[i].phoneNumber,
+                        message: '',
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: Colors.black),
@@ -400,7 +551,7 @@ class _StudentsPageState extends State<StudentsPage> {
                   color: Colors.white,
                   child: Center(
                     child: CustomText(
-                        message: studentAttendance[i].teacherEmail,
+                        message: studentAttendance[i].studentEmail,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: Colors.black),
@@ -412,7 +563,7 @@ class _StudentsPageState extends State<StudentsPage> {
                   padding: const EdgeInsets.all(5),
                   color: Colors.white,
                   child: Center(
-                    child: Text(studentAttendance[i].faculty,
+                    child: Text('',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -459,7 +610,7 @@ class _StudentsPageState extends State<StudentsPage> {
     );
   }
 
-  Widget showPage(List<StudentTest> studentAttendance) {
+  Widget showPage(List<Student> studentAttendance) {
     int startIndex = currentPage * studentsPerPage;
     int endIndex = (currentPage + 1) * studentsPerPage;
     if (endIndex > studentAttendance.length) {
@@ -541,7 +692,35 @@ class _StudentsPageState extends State<StudentsPage> {
 
   Widget customButtonDashBoard(String nameButton) {
     return InkWell(
-      onTap: () {},
+      onTap: _selectFile,
+      mouseCursor: SystemMouseCursors.click,
+      child: Container(
+        width: 80,
+        height: 40,
+        decoration: BoxDecoration(
+            color: nameButton == 'Import Excel'
+                ? const Color(0xff2d71b1)
+                : Colors.white,
+            border: Border.all(
+              width: 0.5,
+              color: Colors.black.withOpacity(0.2),
+            )),
+        child: Center(
+          child: CustomText(
+              message: nameButton,
+              fontSize: 12,
+              fontWeight: FontWeight.normal,
+              color: nameButton == 'Import Excel'
+                  ? Colors.white
+                  : AppColors.primaryText),
+        ),
+      ),
+    );
+  }
+
+  Widget customButtonUploadFile(String nameButton) {
+    return InkWell(
+      onTap: _uploadFile,
       mouseCursor: SystemMouseCursors.click,
       child: Container(
         width: 80,

@@ -4,7 +4,8 @@ import 'dart:typed_data';
 import 'package:admin_attendancesystem_nodejs/common/base/CustomButton.dart';
 import 'package:admin_attendancesystem_nodejs/common/base/CustomText.dart';
 import 'package:admin_attendancesystem_nodejs/common/colors/color.dart';
-import 'package:admin_attendancesystem_nodejs/models/LecturerPage/Teacher.dart';
+import 'package:admin_attendancesystem_nodejs/models/CoursePage/CoursePage.dart';
+
 import 'package:admin_attendancesystem_nodejs/models/StudentPage/Student.dart';
 
 import 'package:admin_attendancesystem_nodejs/services/API.dart';
@@ -12,30 +13,30 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
 
-class LecturerPage extends StatefulWidget {
-  const LecturerPage({super.key});
+class CoursePage extends StatefulWidget {
+  const CoursePage({super.key});
 
   @override
-  State<LecturerPage> createState() => _StudentsPageState();
+  State<CoursePage> createState() => _StudentsPageState();
 }
 
-class _StudentsPageState extends State<LecturerPage> {
+class _StudentsPageState extends State<CoursePage> {
   TextEditingController searchInDashboardController = TextEditingController();
   int currentPage = 0;
   int studentsPerPage = 10;
-  List<TeacherPage> listData = [];
-  List<TeacherPage> listTemp = [];
-  List<TeacherPage> searchResult = [];
+  List<CourseModel> listData = [];
+  List<CourseModel> listTemp = [];
+  List<CourseModel> searchResult = [];
   // List<StudentTest> listData = StudentTest.listData();
   // List<StudentTest> listTemp = [];
   // List<StudentTest> searchResult = [];
-  late Future<List<TeacherPage>> _fetchListStudent;
+  late Future<List<CourseModel>> _fetchListStudent;
   late ProgressDialog _progressDialog;
   Uint8List? _excelBytes;
   String fileName = '';
 
   void fetchData() async {
-    _fetchListStudent = API().getTeacher();
+    _fetchListStudent = API().getCourse();
     _fetchListStudent.then((value) {
       setState(() {
         listData = value;
@@ -52,17 +53,13 @@ class _StudentsPageState extends State<LecturerPage> {
       });
       return;
     }
-    List<TeacherPage> temp = listData;
+    List<CourseModel> temp = listData;
     for (var element in temp) {
-      if (element.teacherEmail.contains(query) ||
-          element.teacherEmail.toLowerCase().trim() ==
+      if (element.courseName.contains(query) ||
+          element.courseName.toLowerCase().trim() ==
               query.toLowerCase().trim() ||
-          element.teacherName.contains(query) ||
-          element.teacherName.toLowerCase().trim() ==
-              query.toLowerCase().trim() ||
-          element.teacherID.contains(query) ||
-          element.teacherName.toLowerCase().trim() ==
-              query.toLowerCase().trim()) {
+          element.courseID.contains(query) ||
+          element.courseID.toLowerCase().trim() == query.toLowerCase().trim()) {
         searchResult.add(element);
       }
     }
@@ -95,7 +92,7 @@ class _StudentsPageState extends State<LecturerPage> {
     }
     try {
       _progressDialog.show();
-      var response = await API().uploadExcelTeacher(_excelBytes!);
+      var response = await API().uploadExcelCourse(_excelBytes!);
       print('response: $response');
       if (response!.isNotEmpty) {
         await _progressDialog.hide();
@@ -223,7 +220,7 @@ class _StudentsPageState extends State<LecturerPage> {
               height: 10,
             ),
             const CustomText(
-                message: 'Information Lecturers',
+                message: 'Information Courses',
                 fontSize: 25,
                 fontWeight: FontWeight.w800,
                 color: AppColors.primaryText),
@@ -307,7 +304,7 @@ class _StudentsPageState extends State<LecturerPage> {
                     width: 20,
                   ),
                   CustomButton(
-                      buttonName: 'Create New Lecturer',
+                      buttonName: 'Create New Courses',
                       backgroundColorButton: const Color(0xff2d71b1),
                       borderColor: Colors.transparent,
                       textColor: Colors.white,
@@ -364,17 +361,17 @@ class _StudentsPageState extends State<LecturerPage> {
     );
   }
 
-  Table tableAttendance(List<TeacherPage> teacherList) {
+  Table tableAttendance(List<CourseModel> studentAttendance) {
     int startIndex = currentPage * studentsPerPage;
     int endIndex =
-        min((currentPage + 1) * studentsPerPage, teacherList.length);
+        min((currentPage + 1) * studentsPerPage, studentAttendance.length);
     return Table(
       columnWidths: const {
         0: FixedColumnWidth(40),
         1: FixedColumnWidth(120),
         2: IntrinsicColumnWidth(),
         3: FlexColumnWidth(1),
-        4: IntrinsicColumnWidth(),
+        4: FlexColumnWidth(1),
         5: FlexColumnWidth(1),
         6: FixedColumnWidth(70),
         7: FixedColumnWidth(70),
@@ -402,7 +399,7 @@ class _StudentsPageState extends State<LecturerPage> {
                 padding: const EdgeInsets.all(5),
                 child: const Center(
                   child: CustomText(
-                      message: 'LecturerID',
+                      message: 'CourseID',
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
@@ -428,7 +425,7 @@ class _StudentsPageState extends State<LecturerPage> {
                 color: const Color(0xff1770f0).withOpacity(0.21),
                 child: const Center(
                   child: CustomText(
-                      message: 'Phone Number',
+                      message: 'Credit',
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
@@ -441,7 +438,7 @@ class _StudentsPageState extends State<LecturerPage> {
                 color: const Color(0xff1770f0).withOpacity(0.21),
                 child: const Center(
                   child: CustomText(
-                      message: 'Email',
+                      message: 'Total Weeks',
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
@@ -454,7 +451,7 @@ class _StudentsPageState extends State<LecturerPage> {
                 color: const Color(0xff1770f0).withOpacity(0.21),
                 child: const Center(
                   child: CustomText(
-                      message: 'Faculty',
+                      message: 'Required Weeks',
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
@@ -512,7 +509,7 @@ class _StudentsPageState extends State<LecturerPage> {
                   padding: const EdgeInsets.all(5),
                   child: Center(
                     child: CustomText(
-                        message: teacherList[i].teacherID,
+                        message: studentAttendance[i].courseID,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: Colors.black),
@@ -525,7 +522,7 @@ class _StudentsPageState extends State<LecturerPage> {
                   color: Colors.white,
                   child: Center(
                     child: CustomText(
-                        message: teacherList[i].teacherName,
+                        message: studentAttendance[i].courseName,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: Colors.black),
@@ -538,7 +535,7 @@ class _StudentsPageState extends State<LecturerPage> {
                   color: Colors.white,
                   child: Center(
                     child: CustomText(
-                        message: '',
+                        message: '${studentAttendance[i].credit}',
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: Colors.black),
@@ -551,7 +548,7 @@ class _StudentsPageState extends State<LecturerPage> {
                   color: Colors.white,
                   child: Center(
                     child: CustomText(
-                        message: teacherList[i].teacherEmail,
+                        message: '${studentAttendance[i].totalWeeks}',
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: Colors.black),
@@ -563,7 +560,7 @@ class _StudentsPageState extends State<LecturerPage> {
                   padding: const EdgeInsets.all(5),
                   color: Colors.white,
                   child: Center(
-                    child: Text('',
+                    child: Text('${studentAttendance[i].requiredWeeks}',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -610,18 +607,18 @@ class _StudentsPageState extends State<LecturerPage> {
     );
   }
 
-  Widget showPage(List<TeacherPage> teacherList) {
+  Widget showPage(List<CourseModel> studentAttendance) {
     int startIndex = currentPage * studentsPerPage;
     int endIndex = (currentPage + 1) * studentsPerPage;
-    if (endIndex > teacherList.length) {
-      endIndex = teacherList.length;
+    if (endIndex > studentAttendance.length) {
+      endIndex = studentAttendance.length;
     }
 
     return Row(
       children: [
         CustomText(
           message:
-              'Show ${startIndex + 1} - $endIndex of ${teacherList.length} results',
+              'Show ${startIndex + 1} - $endIndex of ${studentAttendance.length} results',
           fontSize: 12,
           fontWeight: FontWeight.w500,
           color: AppColors.primaryText,
@@ -653,7 +650,7 @@ class _StudentsPageState extends State<LecturerPage> {
         ),
         CustomText(
             message:
-                '${currentPage + 1}/${(teacherList.length / studentsPerPage).ceil()}',
+                '${currentPage + 1}/${(studentAttendance.length / studentsPerPage).ceil()}',
             fontSize: 12,
             fontWeight: FontWeight.normal,
             color: AppColors.primaryText),
@@ -662,13 +659,13 @@ class _StudentsPageState extends State<LecturerPage> {
           style: ButtonStyle(
             backgroundColor: MaterialStateProperty.all<Color>(
               currentPage <
-                      (teacherList.length / studentsPerPage).ceil() - 1
+                      (studentAttendance.length / studentsPerPage).ceil() - 1
                   ? Colors.white
                   : Colors.white,
             ),
           ),
           onPressed: currentPage <
-                  (teacherList.length / studentsPerPage).ceil() - 1
+                  (studentAttendance.length / studentsPerPage).ceil() - 1
               ? () {
                   setState(() {
                     currentPage++;
@@ -680,7 +677,7 @@ class _StudentsPageState extends State<LecturerPage> {
             style: TextStyle(
               fontSize: 12,
               color: currentPage <
-                      (teacherList.length / studentsPerPage).ceil() - 1
+                      (studentAttendance.length / studentsPerPage).ceil() - 1
                   ? const Color(0xff2d71b1)
                   : Colors.grey,
             ),

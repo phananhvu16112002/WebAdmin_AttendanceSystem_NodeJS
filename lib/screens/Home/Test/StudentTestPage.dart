@@ -184,7 +184,7 @@ class _StudentTestPageState extends State<StudentTestPage> {
                 children: [
                   customButtonDashBoard('Import'),
                   // customButtonDashBoard('PDF'),
-                  customButtonDashBoard('Excel'),
+                  customButtonDashBoard('Import Excel'),
                 ],
               ),
             ),

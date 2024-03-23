@@ -2,11 +2,16 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:admin_attendancesystem_nodejs/models/Class.dart';
+import 'package:admin_attendancesystem_nodejs/models/CoursePage/CoursePage.dart';
+import 'package:admin_attendancesystem_nodejs/models/LecturerPage/Teacher.dart';
+import 'package:admin_attendancesystem_nodejs/models/StudentPage/Student.dart';
+import 'package:admin_attendancesystem_nodejs/models/Teacher.dart';
+import 'package:admin_attendancesystem_nodejs/screens/Home/CoursePage.dart';
 import 'package:http/http.dart' as http;
 
 class API {
   Future<List<Class>> getClassForTeacher(String teacherID) async {
-    final url = 'http://localhost:8080/api/teacher/getClasses';
+    const url = 'http://localhost:8080/api/teacher/getClasses';
     var request = {'teacherID': teacherID};
     var body = json.encode(request);
     var headers = {
@@ -44,7 +49,7 @@ class API {
     }
   }
 
-  Future<String?> uploadExcelTeacher(Uint8List excelBytes) async {
+  Future<List<TeacherPage>?> uploadExcelTeacher(Uint8List excelBytes) async {
     var uri = Uri.parse('http://localhost:8080/api/admin/submit/teachers');
 
     try {
@@ -59,8 +64,28 @@ class API {
 
       var response = await request.send();
       if (response.statusCode == 200) {
-        return 'OK';
+        var responseBody = await response.stream.bytesToString();
+        List<TeacherPage>? data = [];
+        if (responseBody.isNotEmpty) {
+          var jsonResponse = jsonDecode(responseBody);
+          if (jsonResponse.containsKey('data')) {
+            List studentList = jsonResponse['data'];
+            for (var studentData in studentList) {
+              try {
+                data.add(TeacherPage.fromJson(studentData));
+              } catch (e) {
+                print('Error parsing student data: $e');
+              }
+            }
+          } else {
+            print('No student data found in response');
+          }
+        } else {
+          print('Response body is empty');
+        }
+        return data;
       } else {
+        print('Non-200 response: ${response.statusCode}');
         return null;
       }
     } catch (e) {
@@ -69,7 +94,7 @@ class API {
     }
   }
 
-  Future<String?> uploadExcelStudent(Uint8List excelBytes) async {
+  Future<List<Student>?> uploadExcelStudent(Uint8List excelBytes) async {
     var uri = Uri.parse('http://localhost:8080/api/admin/submit/students');
 
     try {
@@ -84,8 +109,28 @@ class API {
 
       var response = await request.send();
       if (response.statusCode == 200) {
-        return 'OK';
+        var responseBody = await response.stream.bytesToString();
+        List<Student>? data = [];
+        if (responseBody.isNotEmpty) {
+          var jsonResponse = jsonDecode(responseBody);
+          if (jsonResponse.containsKey('data')) {
+            List lecturerList = jsonResponse['data'];
+            for (var lecturerData in lecturerList) {
+              try {
+                data.add(Student.fromJson(lecturerData));
+              } catch (e) {
+                print('Error parsing student data: $e');
+              }
+            }
+          } else {
+            print('No student data found in response');
+          }
+        } else {
+          print('Response body is empty');
+        }
+        return data;
       } else {
+        print('Non-200 response: ${response.statusCode}');
         return null;
       }
     } catch (e) {
@@ -94,7 +139,7 @@ class API {
     }
   }
 
-  Future<String?> uploadExcelCourse(Uint8List excelBytes) async {
+  Future<List<CourseModel>?> uploadExcelCourse(Uint8List excelBytes) async {
     var uri = Uri.parse('http://localhost:8080/api/admin/submit/course');
 
     try {
@@ -109,8 +154,28 @@ class API {
 
       var response = await request.send();
       if (response.statusCode == 200) {
-        return 'OK';
+        var responseBody = await response.stream.bytesToString();
+        List<CourseModel>? data = [];
+        if (responseBody.isNotEmpty) {
+          var jsonResponse = jsonDecode(responseBody);
+          if (jsonResponse.containsKey('data')) {
+            List courseList = jsonResponse['data'];
+            for (var courseData in courseList) {
+              try {
+                data.add(CourseModel.fromJson(courseData));
+              } catch (e) {
+                print('Error parsing student data: $e');
+              }
+            }
+          } else {
+            print('No student data found in response');
+          }
+        } else {
+          print('Response body is empty');
+        }
+        return data;
       } else {
+        print('Non-200 response: ${response.statusCode}');
         return null;
       }
     } catch (e) {
@@ -144,7 +209,6 @@ class API {
       print('Group:${group.runtimeType}');
       print('SubGroup:${subGroup.runtimeType}');
 
-
       var request = http.MultipartRequest("POST", uri);
       var multipartFile = http.MultipartFile.fromBytes(
         'file',
@@ -174,6 +238,108 @@ class API {
     } catch (e) {
       print('Error uploading file: $e');
       return null;
+    }
+  }
+
+  Future<List<Student>> getStudent() async {
+    final url = 'http://localhost:8080/api/admin/students';
+    var headers = {
+      'Content-type': 'application/json; charset=UTF-8',
+      'Accept': 'application/json',
+    };
+    final response = await http.get(Uri.parse(url), headers: headers);
+    try {
+      if (response.statusCode == 200) {
+        List studentList = jsonDecode(response.body);
+        List<Student> data = [];
+        for (var temp in studentList) {
+          if (temp is Map<String, dynamic>) {
+            try {
+              data.add(Student.fromJson(temp));
+            } catch (e) {
+              print('Error parsing data: $e');
+            }
+          } else {
+            print('Invalid data type: $temp');
+          }
+        }
+        // print('Data ${data}');
+        return data;
+      } else {
+        print('Failed to load data. Status code: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('Error: $e');
+      return [];
+    }
+  }
+
+  Future<List<TeacherPage>> getTeacher() async {
+    final url = 'http://localhost:8080/api/admin/teachers';
+    var headers = {
+      'Content-type': 'application/json; charset=UTF-8',
+      'Accept': 'application/json',
+    };
+    final response = await http.get(Uri.parse(url), headers: headers);
+    try {
+      if (response.statusCode == 200) {
+        List teacherList = jsonDecode(response.body);
+        List<TeacherPage> data = [];
+        for (var temp in teacherList) {
+          if (temp is Map<String, dynamic>) {
+            try {
+              data.add(TeacherPage.fromJson(temp));
+            } catch (e) {
+              print('Error parsing data: $e');
+            }
+          } else {
+            print('Invalid data type: $temp');
+          }
+        }
+        // print('Data ${data}');
+        return data;
+      } else {
+        print('Failed to load data. Status code: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('Error: $e');
+      return [];
+    }
+  }
+
+  Future<List<CourseModel>> getCourse() async {
+    final url = 'http://localhost:8080/api/admin/courses';
+    var headers = {
+      'Content-type': 'application/json; charset=UTF-8',
+      'Accept': 'application/json',
+    };
+    final response = await http.get(Uri.parse(url), headers: headers);
+    try {
+      if (response.statusCode == 200) {
+        List courseList = jsonDecode(response.body);
+        List<CourseModel> data = [];
+        for (var temp in courseList) {
+          if (temp is Map<String, dynamic>) {
+            try {
+              data.add(CourseModel.fromJson(temp));
+            } catch (e) {
+              print('Error parsing data: $e');
+            }
+          } else {
+            print('Invalid data type: $temp');
+          }
+        }
+        // print('Data ${data}');
+        return data;
+      } else {
+        print('Failed to load data. Status code: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('Error: $e');
+      return [];
     }
   }
 }

@@ -4,6 +4,7 @@ import 'package:admin_attendancesystem_nodejs/common/base/CustomText.dart';
 import 'package:admin_attendancesystem_nodejs/common/base/CustomTextField.dart';
 import 'package:admin_attendancesystem_nodejs/common/colors/color.dart';
 import 'package:admin_attendancesystem_nodejs/models/Class.dart';
+import 'package:admin_attendancesystem_nodejs/screens/Home/CoursePage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CreateNewLectuer.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CreateNewStudent.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/Test/LectuerTestPage.dart';
@@ -30,6 +31,7 @@ class _HomePageState extends State<HomePage> {
   bool checkLectuers = false;
   bool checkStudents = false;
   bool checkSettings = false;
+  bool checkCourse = false;
 
   OverlayEntry? overlayEntry;
 
@@ -276,10 +278,13 @@ class _HomePageState extends State<HomePage> {
           checkLectuers = false;
           checkStudents = false;
           checkSettings = false;
+          checkCourse = false;
           if (title == 'Home') {
             checkHome = true;
           } else if (title == 'Notifications') {
             checkNotification = true;
+          } else if (title == 'Courses') {
+            checkCourse = true;
           } else if (title == 'Lectuers') {
             checkLectuers = true;
           } else if (title == 'Students') {
@@ -347,15 +352,17 @@ class _HomePageState extends State<HomePage> {
                 color: AppColors.secondaryText),
             itemHeader('Notifications',
                 const Icon(Icons.notifications_outlined), checkNotification),
+            itemHeader('Courses', const Icon(Icons.bookmark_add_outlined),
+                checkCourse),
             const CustomText(
                 message: 'Manage',
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
                 color: AppColors.secondaryText),
-            itemHeader('Lectuers', const Icon(Icons.cloud_download_outlined),
-                checkLectuers),
-            itemHeader('Students', const Icon(Icons.calendar_month_outlined),
-                checkStudents),
+            itemHeader(
+                'Lectuers', const Icon(Icons.person_2_outlined), checkLectuers),
+            itemHeader(
+                'Students', const Icon(Icons.person_2_outlined), checkStudents),
             const CustomText(
                 message: 'Personal',
                 fontSize: 12,
@@ -371,12 +378,14 @@ class _HomePageState extends State<HomePage> {
 
   Widget selectedPage() {
     if (checkHome) {
-      return LectuersTestPage();
+      return containerHome();
     } else if (checkNotification) {
       // html.window.history.pushState({}, 'Notification', '/Detail/Notification');
       return const NotificationPage();
+    } else if (checkCourse) {
+      return const CoursePage();
     } else if (checkLectuers) {
-      return  LectuersTestPage();
+      return const LecturerPage();
     } else if (checkStudents) {
       return const StudentsPage();
     } else if (checkSettings) {
