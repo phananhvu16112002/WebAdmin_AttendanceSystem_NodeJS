@@ -108,7 +108,7 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
     }
     try {
       _progressDialog.show();
-      var response = await API().uploadExcelClasses(
+      var response = await API(context).uploadExcelClasses(
           _excelBytes!,
           courseID,
           teacherID,
@@ -420,7 +420,7 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
                               onPressed: () {},
                               icon: Icon(Icons.lock_clock_outlined,
                                   color: Colors.black.withOpacity(0.5))),
-                          'Ex:A0505',
+                          'Ex:11:11:00',
                           true)
                     ],
                   ),
@@ -443,7 +443,7 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
                               onPressed: () {},
                               icon: Icon(Icons.lock_clock_outlined,
                                   color: Colors.black.withOpacity(0.5))),
-                          'Ex: 3',
+                          'Ex: 15:15:00',
                           true)
                     ],
                   )

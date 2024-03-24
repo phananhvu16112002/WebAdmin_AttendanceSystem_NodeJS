@@ -284,7 +284,7 @@ class _HomePageTestState extends State<HomePageTest> {
             checkHome = true;
           } else if (title == 'Course') {
             checkNotification = true;
-          }  else if (title == 'Students') {
+          } else if (title == 'Students') {
             checkStudents = true;
           } else if (title == 'Classes') {
             checkSettings = true;
@@ -343,8 +343,8 @@ class _HomePageTestState extends State<HomePageTest> {
                 color: AppColors.secondaryText),
             itemHeader('Lectuers', const Icon(Icons.home_outlined), checkHome),
 
-            itemHeader('Course',
-                const Icon(Icons.notifications_outlined), checkNotification),
+            itemHeader('Course', const Icon(Icons.notifications_outlined),
+                checkNotification),
             // const CustomText(
             //     message: 'Manage',
             //     fontSize: 12,
@@ -570,62 +570,62 @@ class _HomePageTestState extends State<HomePageTest> {
             const SizedBox(
               height: 10,
             ),
-            Expanded(
-              child: FutureBuilder(
-                future: API().getClassForTeacher('222h333'),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    if (snapshot.data != null) {
-                      List<Class>? classes = snapshot.data;
-                      // Future.delayed(Duration.zero, () {
-                      //   classDataProvider.setAttendanceFormData(classes!);
-                      // });
-                      return GridView.builder(
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 3,
-                                  crossAxisSpacing: 10,
-                                  childAspectRatio: 2.1,
-                                  mainAxisSpacing: 10),
-                          itemCount: classes!.length,
-                          itemBuilder: (context, index) {
-                            Class data = classes[index];
-                            var randomBanner = Random().nextInt(3);
+            // Expanded(
+            //   child: FutureBuilder(
+            //     future: API(context).getClassForTeacher('222h333'),
+            //     builder: (context, snapshot) {
+            //       if (snapshot.hasData) {
+            //         if (snapshot.data != null) {
+            //           List<Class>? classes = snapshot.data;
+            //           // Future.delayed(Duration.zero, () {
+            //           //   classDataProvider.setAttendanceFormData(classes!);
+            //           // });
+            //           return GridView.builder(
+            //               gridDelegate:
+            //                   const SliverGridDelegateWithFixedCrossAxisCount(
+            //                       crossAxisCount: 3,
+            //                       crossAxisSpacing: 10,
+            //                       childAspectRatio: 2.1,
+            //                       mainAxisSpacing: 10),
+            //               itemCount: classes!.length,
+            //               itemBuilder: (context, index) {
+            //                 Class data = classes[index];
+            //                 var randomBanner = Random().nextInt(3);
 
-                            return InkWell(
-                              onTap: () {
-                                // Navigator.push(
-                                //     context,
-                                //     MaterialPageRoute(
-                                //         builder: (builder) =>
-                                //             const DetailPage()));
-                              },
-                              mouseCursor: SystemMouseCursors.click,
-                              child: Container(
-                                child: customClass(
-                                    data.course.courseName,
-                                    data.classType,
-                                    data.group,
-                                    data.subGroup,
-                                    data.shiftNumber,
-                                    data.roomNumber,
-                                    'assets/images/banner$randomBanner.jpg'),
-                              ),
-                            );
-                          });
-                    }
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else {
-                    return const Center(
-                        child: CircularProgressIndicator(
-                      value: 5,
-                    ));
-                  }
-                  return const Center(child: Text('Data is not available'));
-                },
-              ),
-            ),
+            //                 return InkWell(
+            //                   onTap: () {
+            //                     // Navigator.push(
+            //                     //     context,
+            //                     //     MaterialPageRoute(
+            //                     //         builder: (builder) =>
+            //                     //             const DetailPage()));
+            //                   },
+            //                   mouseCursor: SystemMouseCursors.click,
+            //                   child: Container(
+            //                     child: customClass(
+            //                         data.course.courseName,
+            //                         data.classType,
+            //                         data.group,
+            //                         data.subGroup,
+            //                         data.shiftNumber,
+            //                         data.roomNumber,
+            //                         'assets/images/banner$randomBanner.jpg'),
+            //                   ),
+            //                 );
+            //               });
+            //         }
+            //       } else if (snapshot.hasError) {
+            //         return Center(child: Text('Error: ${snapshot.error}'));
+            //       } else {
+            //         return const Center(
+            //             child: CircularProgressIndicator(
+            //           value: 5,
+            //         ));
+            //       }
+            //       return const Center(child: Text('Data is not available'));
+            //     },
+            //   ),
+            // ),
           ],
         ),
       ),

@@ -1,12 +1,15 @@
 import 'dart:math';
 
+import 'package:admin_attendancesystem_nodejs/common/base/CustomButton.dart';
 import 'package:admin_attendancesystem_nodejs/common/base/CustomText.dart';
 import 'package:admin_attendancesystem_nodejs/common/base/CustomTextField.dart';
 import 'package:admin_attendancesystem_nodejs/common/colors/color.dart';
 import 'package:admin_attendancesystem_nodejs/models/Class.dart';
+import 'package:admin_attendancesystem_nodejs/models/HomePage/ClassModel.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CoursePage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CreateNewLectuer.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CreateNewStudent.dart';
+import 'package:admin_attendancesystem_nodejs/screens/Home/Test/CreateNewClass.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/Test/LectuerTestPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/LectuersPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/NotificationPage.dart';
@@ -14,6 +17,7 @@ import 'package:admin_attendancesystem_nodejs/screens/Home/SettingPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/StudentsPage.dart';
 import 'package:admin_attendancesystem_nodejs/services/API.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'dart:html' as html;
 
@@ -32,6 +36,7 @@ class _HomePageState extends State<HomePage> {
   bool checkStudents = false;
   bool checkSettings = false;
   bool checkCourse = false;
+  bool checkCreateClass = false;
 
   OverlayEntry? overlayEntry;
 
@@ -178,7 +183,10 @@ class _HomePageState extends State<HomePage> {
             Row(
               children: [
                 InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (builder) => HomePage()));
+                  },
                   mouseCursor: SystemMouseCursors.click,
                   child: Image.asset(
                     'assets/images/logo.png',
@@ -339,6 +347,35 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(
               height: 5,
             ),
+            Center(
+              child: CustomButton(
+                buttonName: 'Create New Class',
+                backgroundColorButton: checkCreateClass
+                    ? const Color.fromARGB(62, 226, 240, 253)
+                    : Colors.transparent,
+                borderColor: Colors.black,
+                textColor: AppColors.textName,
+                function: () {
+                  setState(() {
+                    checkHome = false;
+                    checkNotification = false;
+                    checkLectuers = false;
+                    checkStudents = false;
+                    checkSettings = false;
+                    checkCourse = false;
+                    checkCreateClass = true;
+                  });
+                },
+                height: 40,
+                width: 200,
+                fontSize: 12,
+                colorShadow: Colors.transparent,
+                borderRadius: 5,
+              ),
+            ),
+            const SizedBox(
+              height: 5,
+            ),
             const CustomText(
                 message: 'Main',
                 fontSize: 12,
@@ -390,16 +427,29 @@ class _HomePageState extends State<HomePage> {
       return const StudentsPage();
     } else if (checkSettings) {
       return const SettingPage();
+    } else if (checkCreateClass) {
+      return const CreateNewClass();
     } else {
       return containerHome();
     }
   }
 
-  Widget customClass(String className, String typeClass, String group,
-      String subGroup, int shiftNumber, String room, String imgPath) {
+  Widget customClass(
+      String className,
+      String typeClass,
+      String group,
+      String subGroup,
+      int shiftNumber,
+      String room,
+      String imgPath,
+      String teacherName,
+      String teacherID) {
     return Container(
         width: 380,
         height: 200,
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.all(Radius.circular(10)),
+        ),
         child: Card(
             child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -408,7 +458,7 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Container(
                   width: 380,
-                  height: 100,
+                  height: 105,
                   child: ClipRRect(
                     borderRadius: const BorderRadius.all(Radius.circular(10)),
                     child: Image.asset(
@@ -427,11 +477,11 @@ class _HomePageState extends State<HomePage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            CustomText(
-                                message: className,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
+                            Container(
+                              width: 220,
+                              child: cusTomText(
+                                  className, 18, FontWeight.bold, Colors.white),
+                            ),
                             const SizedBox(
                               height: 5,
                             ),
@@ -466,7 +516,13 @@ class _HomePageState extends State<HomePage> {
                                     fontWeight: FontWeight.w500,
                                     color: Colors.white),
                               ],
-                            )
+                            ),
+                            const SizedBox(height: 5),
+                            CustomText(
+                                message: 'Teacher: $teacherName',
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white),
                           ],
                         ),
                       ),
@@ -500,7 +556,7 @@ class _HomePageState extends State<HomePage> {
                       icon: const Icon(Icons.person_2_outlined)),
                   IconButton(
                       onPressed: () {},
-                      icon: const Icon(Icons.analytics_outlined))
+                      icon: const Icon(Icons.document_scanner_outlined))
                 ],
               ),
             )
@@ -538,6 +594,15 @@ class _HomePageState extends State<HomePage> {
 
   void _removePopupMenu() {
     overlayEntry?.remove();
+  }
+
+  Widget cusTomText(
+      String message, double fontSize, FontWeight fontWeight, Color color) {
+    return Text(message,
+        overflow: TextOverflow.ellipsis,
+        maxLines: null,
+        style: GoogleFonts.inter(
+            fontSize: fontSize, fontWeight: fontWeight, color: color));
   }
 
   Container containerHome() {
@@ -586,11 +651,11 @@ class _HomePageState extends State<HomePage> {
             ),
             Expanded(
               child: FutureBuilder(
-                future: API().getClassForTeacher('222h333'),
+                future: API(context).getClasses(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     if (snapshot.data != null) {
-                      List<Class>? classes = snapshot.data;
+                      List<ClassModel>? classes = snapshot.data;
                       // Future.delayed(Duration.zero, () {
                       //   classDataProvider.setAttendanceFormData(classes!);
                       // });
@@ -603,7 +668,7 @@ class _HomePageState extends State<HomePage> {
                                   mainAxisSpacing: 10),
                           itemCount: classes!.length,
                           itemBuilder: (context, index) {
-                            Class data = classes[index];
+                            ClassModel data = classes[index];
                             var randomBanner = Random().nextInt(3);
 
                             return InkWell(
@@ -615,16 +680,16 @@ class _HomePageState extends State<HomePage> {
                                 //             const DetailPage()));
                               },
                               mouseCursor: SystemMouseCursors.click,
-                              child: Container(
-                                child: customClass(
-                                    data.course.courseName,
-                                    data.classType,
-                                    data.group,
-                                    data.subGroup,
-                                    data.shiftNumber,
-                                    data.roomNumber,
-                                    'assets/images/banner$randomBanner.jpg'),
-                              ),
+                              child: customClass(
+                                  data.course.courseName,
+                                  data.classType,
+                                  data.group,
+                                  data.subGroup,
+                                  data.shiftNumber,
+                                  data.roomNumber,
+                                  'assets/images/banner$randomBanner.jpg',
+                                  data.teacher.teacherName,
+                                  data.teacher.teacherID),
                             );
                           });
                     }

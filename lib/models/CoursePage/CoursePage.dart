@@ -15,7 +15,7 @@ class CourseModel {
 
   factory CourseModel.fromJson(Map<String, dynamic> json) {
     return CourseModel(
-      courseID: json['courseID'],
+      courseID: json['courseID'] ,
       courseName: json['courseName'],
       totalWeeks: json['totalWeeks'],
       requiredWeeks: json['requiredWeeks'],

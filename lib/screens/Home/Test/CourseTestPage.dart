@@ -77,7 +77,7 @@ class _CourseTestPageState extends State<CourseTestPage> {
     }
     try {
       _progressDialog.show();
-      var response = await API().uploadExcelCourse(_excelBytes!);
+      var response = await API(context).uploadExcelCourses(_excelBytes!);
       if (response != null && response == 'OK') {
         await _progressDialog.hide();
         if (mounted) {
@@ -102,7 +102,7 @@ class _CourseTestPageState extends State<CourseTestPage> {
                   TextButton(
                     child: const Text("OK"),
                     onPressed: () {
-                                 setState(() {
+                      setState(() {
                         fileName = '';
                       });
                       Navigator.of(context).pop();
@@ -154,8 +154,6 @@ class _CourseTestPageState extends State<CourseTestPage> {
       print('error');
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {

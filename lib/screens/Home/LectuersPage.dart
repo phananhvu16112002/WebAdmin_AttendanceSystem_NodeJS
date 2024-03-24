@@ -33,9 +33,12 @@ class _StudentsPageState extends State<LecturerPage> {
   late ProgressDialog _progressDialog;
   Uint8List? _excelBytes;
   String fileName = '';
+  TextEditingController lecturerIDController = TextEditingController();
+  TextEditingController lecturerNameController = TextEditingController();
+  TextEditingController lecturerEmailController = TextEditingController();
 
   void fetchData() async {
-    _fetchListStudent = API().getTeacher();
+    _fetchListStudent = API(context).getTeachers();
     _fetchListStudent.then((value) {
       setState(() {
         listData = value;
@@ -95,7 +98,7 @@ class _StudentsPageState extends State<LecturerPage> {
     }
     try {
       _progressDialog.show();
-      var response = await API().uploadExcelTeacher(_excelBytes!);
+      var response = await API(context).uploadExcelTeachers(_excelBytes!);
       print('response: $response');
       if (response!.isNotEmpty) {
         await _progressDialog.hide();
@@ -311,7 +314,9 @@ class _StudentsPageState extends State<LecturerPage> {
                       backgroundColorButton: const Color(0xff2d71b1),
                       borderColor: Colors.transparent,
                       textColor: Colors.white,
-                      function: () {},
+                      function: () {
+                        createNewLecturer(context);
+                      },
                       height: 50,
                       width: 150,
                       fontSize: 12,
@@ -364,10 +369,173 @@ class _StudentsPageState extends State<LecturerPage> {
     );
   }
 
+  Future<dynamic> createNewLecturer(BuildContext context) => showDialog(
+      context: context,
+      builder: (builder) => Dialog(
+            backgroundColor: Colors.white,
+            child: Container(
+              width: (MediaQuery.of(context).size.width - 250) / 2 - 20,
+              height: 400,
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.all(Radius.circular(10)),
+                  border: Border.all(color: Colors.black.withOpacity(0.1))),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 20, right: 20, top: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(
+                      height: 30,
+                    ),
+                    const Center(
+                      child: CustomText(
+                          message: 'Create New Lectuer',
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primaryButton),
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    const CustomText(
+                        message: 'Lecturer ID',
+                        fontSize: 12,
+                        fontWeight: FontWeight.normal,
+                        color: AppColors.primaryText),
+                    const SizedBox(height: 5),
+                    customTextField(
+                        450,
+                        40,
+                        false,
+                        lecturerIDController,
+                        TextInputType.phone,
+                        IconButton(
+                            onPressed: () {},
+                            icon: const Icon(Icons.card_membership_outlined,
+                                color: Colors.blue)),
+                        'Ex: 520H0696',
+                        true),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    const CustomText(
+                        message: 'Lecturer Name',
+                        fontSize: 12,
+                        fontWeight: FontWeight.normal,
+                        color: AppColors.primaryText),
+                    const SizedBox(height: 5),
+                    customTextField(
+                        450,
+                        40,
+                        false,
+                        lecturerNameController,
+                        TextInputType.phone,
+                        IconButton(
+                            onPressed: () {},
+                            icon: const Icon(Icons.card_membership_outlined,
+                                color: Colors.blue)),
+                        'Ex: Nguyen Van A',
+                        true),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    const CustomText(
+                        message: 'Email',
+                        fontSize: 12,
+                        fontWeight: FontWeight.normal,
+                        color: AppColors.primaryText),
+                    const SizedBox(height: 5),
+                    customTextField(
+                        450,
+                        40,
+                        false,
+                        lecturerEmailController,
+                        TextInputType.phone,
+                        IconButton(
+                            onPressed: () {},
+                            icon: const Icon(Icons.email_outlined,
+                                color: Color.fromARGB(255, 230, 107, 98))),
+                        'Ex: tuankiet@tdtu.edu.vn',
+                        true),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Center(
+                      child: CustomButton(
+                          buttonName: 'Create',
+                          backgroundColorButton: AppColors.primaryButton,
+                          borderColor: Colors.white,
+                          textColor: Colors.white,
+                          function: () => _submitTeacher(
+                              lecturerIDController.text,
+                              lecturerNameController.text,
+                              lecturerEmailController.text),
+                          height: 40,
+                          width: 200,
+                          fontSize: 15,
+                          colorShadow: Colors.transparent,
+                          borderRadius: 10),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ));
+
+  Widget customTextField(
+      double width,
+      double height,
+      bool readOnly,
+      TextEditingController controller,
+      TextInputType textInputType,
+      IconButton iconSuffix,
+      String hintText,
+      bool enabled) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(
+              top: BorderSide(color: Colors.black.withOpacity(0.2)),
+              left: BorderSide(color: Colors.black.withOpacity(0.2)),
+              right: BorderSide(color: Colors.black.withOpacity(0.2)),
+              bottom: BorderSide(color: Colors.black.withOpacity(0.2))),
+          borderRadius: const BorderRadius.all(Radius.circular(5))),
+      child: TextFormField(
+        enabled: enabled,
+        readOnly: readOnly,
+        controller: controller,
+        keyboardType: textInputType,
+        style: const TextStyle(
+            color: AppColors.primaryText,
+            fontWeight: FontWeight.normal,
+            fontSize: 15),
+        obscureText: false,
+        decoration: InputDecoration(
+            contentPadding: const EdgeInsets.all(20),
+            suffixIcon: iconSuffix,
+            hintText: hintText,
+            hintStyle:
+                TextStyle(fontSize: 12, color: Colors.black.withOpacity(0.5)),
+            enabledBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(5)),
+                borderSide: BorderSide(width: 1, color: Colors.transparent)),
+            focusedBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(5)),
+              borderSide: BorderSide(width: 1, color: AppColors.primaryButton),
+            )),
+      ),
+    );
+  }
+
   Table tableAttendance(List<TeacherPage> teacherList) {
     int startIndex = currentPage * studentsPerPage;
-    int endIndex =
-        min((currentPage + 1) * studentsPerPage, teacherList.length);
+    int endIndex = min((currentPage + 1) * studentsPerPage, teacherList.length);
     return Table(
       columnWidths: const {
         0: FixedColumnWidth(40),
@@ -661,20 +829,19 @@ class _StudentsPageState extends State<LecturerPage> {
         ElevatedButton(
           style: ButtonStyle(
             backgroundColor: MaterialStateProperty.all<Color>(
-              currentPage <
-                      (teacherList.length / studentsPerPage).ceil() - 1
+              currentPage < (teacherList.length / studentsPerPage).ceil() - 1
                   ? Colors.white
                   : Colors.white,
             ),
           ),
-          onPressed: currentPage <
-                  (teacherList.length / studentsPerPage).ceil() - 1
-              ? () {
-                  setState(() {
-                    currentPage++;
-                  });
-                }
-              : null,
+          onPressed:
+              currentPage < (teacherList.length / studentsPerPage).ceil() - 1
+                  ? () {
+                      setState(() {
+                        currentPage++;
+                      });
+                    }
+                  : null,
           child: Text(
             'Next',
             style: TextStyle(
@@ -743,5 +910,83 @@ class _StudentsPageState extends State<LecturerPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _submitTeacher(
+      String lecturerID, String lecturerName, String lecturerEmail) async {
+    try {
+      _progressDialog.show();
+      var response = await API(context)
+          .createNewLecturer(lecturerID, lecturerName, lecturerEmail);
+      if (response != null) {
+        await _progressDialog.hide();
+        if (mounted) {
+          await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Create Teacher"),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Create teacher successfully"),
+                  ],
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text("OK"),
+                    onPressed: () {
+                      setState(() {
+                        listTemp.add(response);
+                      });
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
+
+        print('ok');
+      } else {
+        await _progressDialog.hide();
+        if (mounted) {
+          await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Failed"),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Failed create teacher "),
+                    const SizedBox(height: 8),
+                    Text(
+                      fileName,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text("OK"),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
+
+        print('failed');
+      }
+    } catch (e) {
+      print('error');
+    }
   }
 }

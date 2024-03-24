@@ -22,6 +22,13 @@ class CoursePage extends StatefulWidget {
 
 class _StudentsPageState extends State<CoursePage> {
   TextEditingController searchInDashboardController = TextEditingController();
+  TextEditingController courseIDController = TextEditingController();
+  TextEditingController courseNameController = TextEditingController();
+  TextEditingController totalWeeks = TextEditingController();
+  TextEditingController requiredWeeks = TextEditingController();
+  TextEditingController credit = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   int currentPage = 0;
   int studentsPerPage = 10;
   List<CourseModel> listData = [];
@@ -36,7 +43,7 @@ class _StudentsPageState extends State<CoursePage> {
   String fileName = '';
 
   void fetchData() async {
-    _fetchListStudent = API().getCourse();
+    _fetchListStudent = API(context).getCourses();
     _fetchListStudent.then((value) {
       setState(() {
         listData = value;
@@ -92,7 +99,7 @@ class _StudentsPageState extends State<CoursePage> {
     }
     try {
       _progressDialog.show();
-      var response = await API().uploadExcelCourse(_excelBytes!);
+      var response = await API(context).uploadExcelCourses(_excelBytes!);
       print('response: $response');
       if (response!.isNotEmpty) {
         await _progressDialog.hide();
@@ -308,7 +315,9 @@ class _StudentsPageState extends State<CoursePage> {
                       backgroundColorButton: const Color(0xff2d71b1),
                       borderColor: Colors.transparent,
                       textColor: Colors.white,
-                      function: () {},
+                      function: () {
+                        createNewCourse(context);
+                      },
                       height: 50,
                       width: 150,
                       fontSize: 12,
@@ -740,5 +749,318 @@ class _StudentsPageState extends State<CoursePage> {
         ),
       ),
     );
+  }
+
+  Future<dynamic> createNewCourse(BuildContext context) => showDialog(
+      context: context,
+      builder: (builder) => Dialog(
+            backgroundColor: Colors.white,
+            child: Container(
+              width: (MediaQuery.of(context).size.width - 250) / 2 - 20,
+              height: 600,
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.all(Radius.circular(10)),
+                  border: Border.all(color: Colors.black.withOpacity(0.1))),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 20, right: 20, top: 10),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(
+                        height: 30,
+                      ),
+                      const Center(
+                        child: CustomText(
+                            message: 'Create New Course',
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primaryButton),
+                      ),
+                      const SizedBox(
+                        height: 15,
+                      ),
+                      const CustomText(
+                          message: 'Course ID',
+                          fontSize: 12,
+                          fontWeight: FontWeight.normal,
+                          color: AppColors.primaryText),
+                      const SizedBox(height: 5),
+                      customTextField(
+                          450,
+                          40,
+                          false,
+                          courseIDController,
+                          TextInputType.phone,
+                          IconButton(
+                              onPressed: () {},
+                              icon: const Icon(Icons.card_membership_outlined,
+                                  color: Colors.blue)),
+                          'Ex: 520H0696',
+                          true, (value) {
+                        if (value!.isEmpty || value == '') {
+                          return 'Name CourseID is required';
+                        }
+                        return null;
+                      }),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      const CustomText(
+                          message: 'Course Name',
+                          fontSize: 12,
+                          fontWeight: FontWeight.normal,
+                          color: AppColors.primaryText),
+                      const SizedBox(height: 5),
+                      customTextField(
+                          450,
+                          40,
+                          false,
+                          courseNameController,
+                          TextInputType.phone,
+                          IconButton(
+                              onPressed: () {},
+                              icon: const Icon(Icons.card_membership_outlined,
+                                  color: Colors.blue)),
+                          'Ex: Nguyen Van A',
+                          true, (value) {
+                        if (value!.isEmpty || value == '') {
+                          return 'Name Course is required';
+                        }
+                        return null;
+                      }),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      const CustomText(
+                          message: 'Total Weeks',
+                          fontSize: 12,
+                          fontWeight: FontWeight.normal,
+                          color: AppColors.primaryText),
+                      const SizedBox(height: 5),
+                      customTextField(
+                          450,
+                          40,
+                          false,
+                          totalWeeks,
+                          TextInputType.phone,
+                          IconButton(
+                              onPressed: () {},
+                              icon: const Icon(Icons.email_outlined,
+                                  color: Color.fromARGB(255, 230, 107, 98))),
+                          'Ex: 10',
+                          true, (value) {
+                        if (value!.isEmpty || value == '') {
+                          return 'Total Weeks Course is required';
+                        }
+                        return null;
+                      }),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      const CustomText(
+                          message: 'Required Weeks',
+                          fontSize: 12,
+                          fontWeight: FontWeight.normal,
+                          color: AppColors.primaryText),
+                      const SizedBox(height: 5),
+                      customTextField(
+                          450,
+                          40,
+                          false,
+                          requiredWeeks,
+                          TextInputType.phone,
+                          IconButton(
+                              onPressed: () {},
+                              icon: const Icon(Icons.email_outlined,
+                                  color: Color.fromARGB(255, 230, 107, 98))),
+                          'Ex: 10',
+                          true, (value) {
+                        if (value!.isEmpty || value == '') {
+                          return 'Required Weeks Course is required';
+                        }
+                        return null;
+                      }),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      const CustomText(
+                          message: 'Credit',
+                          fontSize: 12,
+                          fontWeight: FontWeight.normal,
+                          color: AppColors.primaryText),
+                      const SizedBox(height: 5),
+                      customTextField(
+                          450,
+                          40,
+                          false,
+                          credit,
+                          TextInputType.phone,
+                          IconButton(
+                              onPressed: () {},
+                              icon: const Icon(Icons.email_outlined,
+                                  color: Color.fromARGB(255, 230, 107, 98))),
+                          'Ex: 10',
+                          true, (value) {
+                        if (value!.isEmpty || value == '') {
+                          return 'Credit Course is required';
+                        }
+                        return null;
+                      }),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      Center(
+                        child: CustomButton(
+                            buttonName: 'Create',
+                            backgroundColorButton: AppColors.primaryButton,
+                            borderColor: Colors.white,
+                            textColor: Colors.white,
+                            function: () => _submitCourse(
+                                courseIDController.text,
+                                courseNameController.text,
+                                int.parse(totalWeeks.text.toString()),
+                                int.parse(requiredWeeks.text.toString()),
+                                int.parse(credit.text.toString())),
+                            height: 40,
+                            width: 200,
+                            fontSize: 15,
+                            colorShadow: Colors.transparent,
+                            borderRadius: 10),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ));
+
+  Widget customTextField(
+      double width,
+      double height,
+      bool readOnly,
+      TextEditingController controller,
+      TextInputType textInputType,
+      IconButton iconSuffix,
+      String hintText,
+      bool enabled,
+      String? Function(String?)? validator) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(
+              top: BorderSide(color: Colors.black.withOpacity(0.2)),
+              left: BorderSide(color: Colors.black.withOpacity(0.2)),
+              right: BorderSide(color: Colors.black.withOpacity(0.2)),
+              bottom: BorderSide(color: Colors.black.withOpacity(0.2))),
+          borderRadius: const BorderRadius.all(Radius.circular(5))),
+      child: TextFormField(
+        validator: validator,
+        enabled: enabled,
+        readOnly: readOnly,
+        controller: controller,
+        keyboardType: textInputType,
+        style: const TextStyle(
+            color: AppColors.primaryText,
+            fontWeight: FontWeight.normal,
+            fontSize: 15),
+        obscureText: false,
+        decoration: InputDecoration(
+            contentPadding: const EdgeInsets.all(20),
+            suffixIcon: iconSuffix,
+            hintText: hintText,
+            hintStyle:
+                TextStyle(fontSize: 12, color: Colors.black.withOpacity(0.5)),
+            enabledBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(5)),
+                borderSide: BorderSide(width: 1, color: Colors.transparent)),
+            focusedBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(5)),
+              borderSide: BorderSide(width: 1, color: AppColors.primaryButton),
+            )),
+      ),
+    );
+  }
+
+  Future<void> _submitCourse(String courseID, String courseName, int totalWeeks,
+      int requiredWeeks, int credit) async {
+    try {
+      _progressDialog.show();
+      var response = await API(context).createNewCourse(
+          courseID, courseName, totalWeeks, requiredWeeks, credit);
+      if (response != null) {
+        await _progressDialog.hide();
+        if (mounted) {
+          await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Create Course"),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Create course successfully"),
+                  ],
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text("OK"),
+                    onPressed: () {
+                      setState(() {
+                        listTemp.add(response);
+                      });
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
+
+        print('ok');
+      } else {
+        await _progressDialog.hide();
+        if (mounted) {
+          await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Failed"),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Failed create course "),
+                    const SizedBox(height: 8),
+                    Text(
+                      fileName,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text("OK"),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
+
+        print('failed');
+      }
+    } catch (e) {
+      print('error');
+    }
   }
 }

@@ -77,7 +77,7 @@ class _LectuersTestPageState extends State<LectuersTestPage> {
     }
     try {
       _progressDialog.show();
-      var response = await API().uploadExcelTeacher(_excelBytes!);
+      var response = await API(context).uploadExcelTeachers(_excelBytes!);
       if (response != null && response == 'OK') {
         await _progressDialog.hide();
         if (mounted) {
