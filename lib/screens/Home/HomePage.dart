@@ -15,6 +15,7 @@ import 'package:admin_attendancesystem_nodejs/screens/Home/LectuersPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/NotificationPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/SettingPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/StudentsPage.dart';
+import 'package:admin_attendancesystem_nodejs/screens/Test.dart';
 import 'package:admin_attendancesystem_nodejs/services/API.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -415,7 +416,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget selectedPage() {
     if (checkHome) {
-      return containerHome();
+      return TestPage();
     } else if (checkNotification) {
       // html.window.history.pushState({}, 'Notification', '/Detail/Notification');
       return const NotificationPage();
