@@ -416,7 +416,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget selectedPage() {
     if (checkHome) {
-      return TestPage();
+      return containerHome();
     } else if (checkNotification) {
       // html.window.history.pushState({}, 'Notification', '/Detail/Notification');
       return const NotificationPage();
