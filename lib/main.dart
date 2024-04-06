@@ -28,7 +28,7 @@ class _MyAppState extends State<MyApp> {
           dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch},
         ),
         debugShowCheckedModeBanner: false,
-        title: 'Attendance System',
+        title: 'Attendance System Admin',
         theme: ThemeData(
           colorScheme:
               ColorScheme.fromSeed(seedColor: AppColors.backgroundColor),
