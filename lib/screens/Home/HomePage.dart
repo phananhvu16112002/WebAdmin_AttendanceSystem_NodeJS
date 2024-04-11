@@ -23,7 +23,7 @@ import 'package:provider/provider.dart';
 import 'dart:html' as html;
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -186,7 +186,7 @@ class _HomePageState extends State<HomePage> {
                 InkWell(
                   onTap: () {
                     Navigator.push(context,
-                        MaterialPageRoute(builder: (builder) => HomePage()));
+                        MaterialPageRoute(builder: (builder) => const HomePage()));
                   },
                   mouseCursor: SystemMouseCursors.click,
                   child: Image.asset(
@@ -416,7 +416,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget selectedPage() {
     if (checkHome) {
-      return TestPage();
+      return containerHome();
     } else if (checkNotification) {
       // html.window.history.pushState({}, 'Notification', '/Detail/Notification');
       return const NotificationPage();
@@ -448,8 +448,8 @@ class _HomePageState extends State<HomePage> {
     return Container(
         width: 380,
         height: 200,
-        decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(Radius.circular(10)),
+        decoration: const BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(10)),
         ),
         child: Card(
             child: Column(
@@ -457,9 +457,9 @@ class _HomePageState extends State<HomePage> {
           children: [
             Stack(
               children: [
-                Container(
+                SizedBox(
                   width: 380,
-                  height: 105,
+                  height: 100,
                   child: ClipRRect(
                     borderRadius: const BorderRadius.all(Radius.circular(10)),
                     child: Image.asset(
@@ -469,7 +469,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(left: 10, top: 10),
+                  padding: const EdgeInsets.only(left: 5, top: 10),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -478,7 +478,7 @@ class _HomePageState extends State<HomePage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
+                            SizedBox(
                               width: 220,
                               child: cusTomText(
                                   className, 18, FontWeight.bold, Colors.white),
@@ -549,7 +549,7 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 225, right: 10),
+              padding: const EdgeInsets.only(left: 220, right: 10),
               child: Row(
                 children: [
                   IconButton(
@@ -606,8 +606,8 @@ class _HomePageState extends State<HomePage> {
             fontSize: fontSize, fontWeight: fontWeight, color: color));
   }
 
-  Container containerHome() {
-    return Container(
+  Widget containerHome() {
+    return SizedBox(
       width: MediaQuery.of(context).size.width - 250,
       height: MediaQuery.of(context).size.height,
       child: Padding(
