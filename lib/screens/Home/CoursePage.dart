@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:admin_attendancesystem_nodejs/common/base/CustomButton.dart';
 import 'package:admin_attendancesystem_nodejs/common/base/CustomText.dart';
 import 'package:admin_attendancesystem_nodejs/common/colors/color.dart';
-import 'package:admin_attendancesystem_nodejs/models/CoursePage/CoursePage.dart';
+import 'package:admin_attendancesystem_nodejs/models/CoursePage/CourseModel.dart';
 
 import 'package:admin_attendancesystem_nodejs/models/StudentPage/Student.dart';
 
@@ -86,7 +86,7 @@ class _StudentsPageState extends State<CoursePage> {
     if (result != null) {
       setState(() {
         _excelBytes = result.files.single.bytes;
-        fileName = result.files.single.name!;
+        fileName = result.files.single.name;
       });
     }
   }
@@ -215,7 +215,7 @@ class _StudentsPageState extends State<CoursePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: MediaQuery.of(context).size.width - 250,
       height: MediaQuery.of(context).size.height,
       child: Padding(
@@ -234,7 +234,7 @@ class _StudentsPageState extends State<CoursePage> {
             const SizedBox(
               height: 20,
             ),
-            Container(
+            SizedBox(
               width: MediaQuery.of(context).size.width - 250,
               height: 40,
               child: Row(
@@ -330,7 +330,7 @@ class _StudentsPageState extends State<CoursePage> {
               height: 20,
             ),
             listTemp.isNotEmpty
-                ? Container(
+                ? SizedBox(
                     width: MediaQuery.of(context).size.width - 250,
                     height: 380,
                     child: Column(
@@ -578,35 +578,52 @@ class _StudentsPageState extends State<CoursePage> {
                   ),
                 ),
               ),
-              TableCell(
-                child: Container(
-                  padding: const EdgeInsets.all(5),
-                  color: Colors.white,
-                  child: const Center(
-                    child: Text(
-                      'Edit',
-                      style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.primaryButton,
-                          decorationColor: AppColors.primaryButton,
-                          decoration: TextDecoration.underline),
+              InkWell(
+                onTap: () {
+                  editCourse(
+                      context,
+                      studentAttendance[i].courseID,
+                      studentAttendance[i].courseName,
+                      studentAttendance[i].totalWeeks,
+                      studentAttendance[i].requiredWeeks,
+                      studentAttendance[i].credit,
+                      i);
+                },
+                child: TableCell(
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    color: Colors.white,
+                    child: const Center(
+                      child: Text(
+                        'Edit',
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.primaryButton,
+                            decorationColor: AppColors.primaryButton,
+                            decoration: TextDecoration.underline),
+                      ),
                     ),
                   ),
                 ),
               ),
-              TableCell(
-                child: Container(
-                  padding: const EdgeInsets.all(5),
-                  color: Colors.white,
-                  child: const Center(
-                    child: Text('Delete',
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.importantText,
-                            decorationColor: AppColors.importantText,
-                            decoration: TextDecoration.underline)),
+              InkWell(
+                onTap: () {
+                  _deleteCourseDialog(studentAttendance, i);
+                },
+                child: TableCell(
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    color: Colors.white,
+                    child: const Center(
+                      child: Text('Delete',
+                          style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.importantText,
+                              decorationColor: AppColors.importantText,
+                              decoration: TextDecoration.underline)),
+                    ),
                   ),
                 ),
               ),
@@ -614,6 +631,101 @@ class _StudentsPageState extends State<CoursePage> {
           ),
       ],
     );
+  }
+
+  Future<dynamic> _deleteCourseDialog(
+      List<CourseModel> studentAttendance, int i) {
+    return showDialog(
+        context: context,
+        builder: (builder) => AlertDialog(
+              backgroundColor: Colors.white,
+              title: const CustomText(
+                  message: 'Are you want to delete course ?',
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryText),
+              actions: [
+                InkWell(
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                  child: const CustomText(
+                      message: 'Cancel',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.primaryButton),
+                ),
+                InkWell(
+                  onTap: () async {
+                    _progressDialog.show();
+                    bool? check = await API(context)
+                        .delteCourse(studentAttendance[i].courseID);
+                    if (check != null && check) {
+                      await _progressDialog.hide();
+                      if (mounted) {
+                        showDialog(
+                          context: context,
+                          builder: (builder) => AlertDialog(
+                            title: const CustomText(
+                                message: 'Delete cousre successfully',
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primaryButton),
+                            actions: [
+                              InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    listTemp.removeAt(i);
+                                  });
+                                  Navigator.pop(context);
+                                  Navigator.pop(context);
+                                },
+                                child: const CustomText(
+                                    message: 'OK',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.primaryButton),
+                              )
+                            ],
+                          ),
+                        );
+                      }
+                    } else {
+                      await _progressDialog.hide();
+                      if (mounted) {
+                        showDialog(
+                          context: context,
+                          builder: (builder) => AlertDialog(
+                            title: const CustomText(
+                                message: 'Delete cousre failed',
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primaryButton),
+                            actions: [
+                              InkWell(
+                                onTap: () {
+                                  Navigator.pop(context);
+                                },
+                                child: const CustomText(
+                                    message: 'OK',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.importantText),
+                              )
+                            ],
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  child: const CustomText(
+                      message: 'Accept',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.importantText),
+                ),
+              ],
+            ));
   }
 
   Widget showPage(List<CourseModel> studentAttendance) {
@@ -937,6 +1049,205 @@ class _StudentsPageState extends State<CoursePage> {
             ),
           ));
 
+  Future<dynamic> editCourse(BuildContext context, String courseID,
+          String courseName, int total, int required, int cre, int index) =>
+      showDialog(
+          context: context,
+          builder: (builder) {
+            courseIDController.text = courseID;
+            courseNameController.text = courseName;
+            totalWeeks.text = total.toString();
+            requiredWeeks.text = required.toString();
+            credit.text = cre.toString();
+
+            return Dialog(
+              child: Container(
+                width: (MediaQuery.of(context).size.width - 250) / 2 - 20,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    border: Border.all(color: Colors.black.withOpacity(0.1))),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 20, right: 20, top: 10),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(
+                          height: 30,
+                        ),
+                        const Center(
+                          child: CustomText(
+                              message: 'Edit Course',
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primaryButton),
+                        ),
+                        const SizedBox(
+                          height: 15,
+                        ),
+                        const CustomText(
+                            message: 'Course ID',
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            color: AppColors.primaryText),
+                        const SizedBox(height: 5),
+                        customTextField(
+                            450,
+                            40,
+                            true,
+                            courseIDController,
+                            TextInputType.phone,
+                            const IconButton(
+                                onPressed: null,
+                                icon: Icon(Icons.card_membership_outlined,
+                                    color: Colors.blue)),
+                            'Ex: 520H0696',
+                            true, (value) {
+                          if (value!.isEmpty || value == '') {
+                            return 'Name CourseID is required';
+                          }
+                          return null;
+                        }),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        const CustomText(
+                            message: 'Course Name',
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            color: AppColors.primaryText),
+                        const SizedBox(height: 5),
+                        customTextField(
+                            450,
+                            40,
+                            false,
+                            courseNameController,
+                            TextInputType.phone,
+                            const IconButton(
+                                onPressed: null,
+                                icon: Icon(Icons.card_membership_outlined,
+                                    color: Colors.blue)),
+                            'Ex: Nguyen Van A',
+                            true, (value) {
+                          if (value!.isEmpty || value == '') {
+                            return 'Name Course is required';
+                          }
+                          return null;
+                        }),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        const CustomText(
+                            message: 'Total Weeks',
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            color: AppColors.primaryText),
+                        const SizedBox(height: 5),
+                        customTextField(
+                            450,
+                            40,
+                            false,
+                            totalWeeks,
+                            TextInputType.phone,
+                            const IconButton(
+                                onPressed: null,
+                                icon: Icon(Icons.email_outlined,
+                                    color: Color.fromARGB(255, 230, 107, 98))),
+                            'Ex: 10',
+                            true, (value) {
+                          if (value!.isEmpty || value == '') {
+                            return 'Total Weeks Course is required';
+                          }
+                          return null;
+                        }),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        const CustomText(
+                            message: 'Required Weeks',
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            color: AppColors.primaryText),
+                        const SizedBox(height: 5),
+                        customTextField(
+                            450,
+                            40,
+                            false,
+                            requiredWeeks,
+                            TextInputType.phone,
+                            const IconButton(
+                                onPressed: null,
+                                icon: Icon(Icons.email_outlined,
+                                    color: Color.fromARGB(255, 230, 107, 98))),
+                            'Ex: 10',
+                            true, (value) {
+                          if (value!.isEmpty || value == '') {
+                            return 'Required Weeks Course is required';
+                          }
+                          return null;
+                        }),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        const CustomText(
+                            message: 'Credit',
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            color: AppColors.primaryText),
+                        const SizedBox(height: 5),
+                        customTextField(
+                            450,
+                            40,
+                            false,
+                            credit,
+                            TextInputType.phone,
+                            IconButton(
+                                onPressed: () {},
+                                icon: const Icon(Icons.email_outlined,
+                                    color: Color.fromARGB(255, 230, 107, 98))),
+                            'Ex: 10',
+                            true, (value) {
+                          if (value!.isEmpty || value == '') {
+                            return 'Credit Course is required';
+                          }
+                          return null;
+                        }),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        Center(
+                          child: CustomButton(
+                              buttonName: 'Edit',
+                              backgroundColorButton: AppColors.primaryButton,
+                              borderColor: Colors.white,
+                              textColor: Colors.white,
+                              function: () async {
+                                _editCourse(
+                                    courseID,
+                                    courseNameController.text,
+                                    int.parse(totalWeeks.text.toString()),
+                                    int.parse(requiredWeeks.text.toString()),
+                                    int.parse(credit.text.toString()),
+                                    index);
+                              },
+                              height: 40,
+                              width: 200,
+                              fontSize: 15,
+                              colorShadow: Colors.transparent,
+                              borderRadius: 10),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          });
+
   Widget customTextField(
       double width,
       double height,
@@ -1000,11 +1311,11 @@ class _StudentsPageState extends State<CoursePage> {
             builder: (BuildContext context) {
               return AlertDialog(
                 title: const Text("Create Course"),
-                content: Column(
+                content: const Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Create course successfully"),
+                    Text("Create course successfully"),
                   ],
                 ),
                 actions: <Widget>[
@@ -1014,6 +1325,7 @@ class _StudentsPageState extends State<CoursePage> {
                       setState(() {
                         listTemp.add(response);
                       });
+                      Navigator.of(context).pop();
                       Navigator.of(context).pop();
                     },
                   ),
@@ -1037,6 +1349,86 @@ class _StudentsPageState extends State<CoursePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text("Failed create course "),
+                    const SizedBox(height: 8),
+                    Text(
+                      fileName,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text("OK"),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
+
+        print('failed');
+      }
+    } catch (e) {
+      print('error');
+    }
+  }
+
+  Future<void> _editCourse(String courseID, String courseName, int totalWeeks,
+      int requiredWeeks, int credit, int index) async {
+    try {
+      _progressDialog.show();
+      var response = await API(context).updateCourse(
+          courseID, courseName, totalWeeks, requiredWeeks, credit);
+      if (response != null && response) {
+        await _progressDialog.hide();
+        if (mounted) {
+          await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Edit Course"),
+                content: const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Edit course successfully"),
+                  ],
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text("OK"),
+                    onPressed: () {
+                      setState(() {
+                        listTemp[index].courseName = courseName;
+                        listTemp[index].totalWeeks = totalWeeks;
+                        listTemp[index].requiredWeeks = requiredWeeks;
+                        listTemp[index].credit = credit;
+                      });
+                      Navigator.of(context).pop();
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      } else {
+        await _progressDialog.hide();
+        if (mounted) {
+          await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Failed"),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Failed edit course "),
                     const SizedBox(height: 8),
                     Text(
                       fileName,

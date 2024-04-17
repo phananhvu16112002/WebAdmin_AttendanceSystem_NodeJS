@@ -1,7 +1,7 @@
 class TeacherPage {
-  final String teacherID;
-  final String teacherName;
-  final String teacherEmail;
+   String teacherID;
+   String teacherName;
+   String teacherEmail;
 
   TeacherPage({
     required this.teacherID,

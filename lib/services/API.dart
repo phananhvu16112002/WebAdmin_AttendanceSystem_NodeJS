@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:admin_attendancesystem_nodejs/models/Class.dart';
-import 'package:admin_attendancesystem_nodejs/models/CoursePage/CoursePage.dart';
+import 'package:admin_attendancesystem_nodejs/models/CoursePage/CourseModel.dart';
 import 'package:admin_attendancesystem_nodejs/models/HomePage/ClassModel.dart';
 import 'package:admin_attendancesystem_nodejs/models/LecturerPage/Teacher.dart';
 import 'package:admin_attendancesystem_nodejs/models/StudentPage/Student.dart';
@@ -116,7 +116,7 @@ class API {
           if (jsonResponse.containsKey('data')) {
             List teacherList = jsonResponse['data'];
             for (var teacherData in teacherList) {
-              print('teacherData: ${teacherData}');
+              print('teacherData: $teacherData');
               try {
                 data.add(TeacherPage.fromJson(teacherData));
               } catch (e) {
@@ -433,7 +433,7 @@ class API {
   }
 
   Future<List<Student>> getStudents() async {
-    final URL = 'http://localhost:8080/api/admin/students'; //10.0.2.2
+    const URL = 'http://localhost:8080/api/admin/students'; //10.0.2.2
 
     var accessToken = await getAccessToken();
     var headers = {'authorization': accessToken};
@@ -522,7 +522,7 @@ class API {
   }
 
   Future<List<TeacherPage>> getTeachers() async {
-    final URL = 'http://localhost:8080/api/admin/teachers'; //10.0.2.2
+    const URL = 'http://localhost:8080/api/admin/teachers'; //10.0.2.2
 
     var accessToken = await getAccessToken();
     var headers = {'authorization': accessToken};
@@ -611,7 +611,7 @@ class API {
   }
 
   Future<List<CourseModel>> getCourses() async {
-    final URL = 'http://localhost:8080/api/admin/courses'; //10.0.2.2
+    const URL = 'http://localhost:8080/api/admin/courses'; //10.0.2.2
 
     var accessToken = await getAccessToken();
     var headers = {'authorization': accessToken};
@@ -700,7 +700,7 @@ class API {
   }
 
   Future<List<ClassModel>> getClasses() async {
-    final URL = 'http://localhost:8080/api/admin/classes'; //10.0.2.2
+    const URL = 'http://localhost:8080/api/admin/classes'; //10.0.2.2
 
     var accessToken = await getAccessToken();
     var headers = {'authorization': accessToken};
@@ -788,7 +788,7 @@ class API {
 
   Future<TeacherPage?> createNewLecturer(
       String lecturerID, String lecturerName, String lecturerEmail) async {
-    final url = 'http://localhost:8080/api/admin/submit/teacher';
+    const url = 'http://localhost:8080/api/admin/submit/teacher';
     var accessToken = await getAccessToken();
     var request = {
       'teacherID': lecturerID,
@@ -842,9 +842,109 @@ class API {
     }
   }
 
+  Future<bool?> updateLecturer(
+    String teacherID,
+    String teacherName,
+  ) async {
+    final url = 'http://localhost:8080/api/admin/edit/teacher/$teacherID';
+    var accessToken = await getAccessToken();
+    var request = {
+      'teacherName': teacherName,
+    };
+    var body = json.encode(request);
+    var headers = {
+      'authorization': accessToken,
+      'Content-type': 'application/json; charset=UTF-8',
+      'Accept': 'application/json',
+    };
+    try {
+      final response =
+          await http.put(Uri.parse(url), headers: headers, body: body);
+      // print(jsonDecode(response.body));
+      if (response.statusCode == 200) {
+        dynamic responseData = jsonDecode(response.body);
+        String message = responseData['message'];
+        print('Message: $message');
+        return true;
+      } else if (response.statusCode == 498 || response.statusCode == 401) {
+        var refreshToken = await SecureStorage().readSecureData('refreshToken');
+        var newAccessToken = await refreshAccessToken(refreshToken);
+        if (newAccessToken.isNotEmpty) {
+          headers['authorization'] = newAccessToken;
+          final retryResponse =
+              await http.post(Uri.parse(url), headers: headers, body: body);
+          if (retryResponse.statusCode == 200) {
+            dynamic responseData = jsonDecode(retryResponse.body);
+            String message = responseData['message'];
+            print('Message: $message');
+            return true;
+          } else {
+            return false;
+          }
+        } else {
+          print('New Access Token is empty');
+          return false;
+        }
+      } else {
+        print('Failed to load data. Status code: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('Error: $e');
+      return false;
+    }
+  }
+
+  Future<bool?> deleteLecturer(
+    String teacherID,
+  ) async {
+    final url = 'http://localhost:8080/api/admin/teacher/$teacherID';
+    var accessToken = await getAccessToken();
+    var headers = {
+      'authorization': accessToken,
+    };
+    try {
+      final response = await http.delete(Uri.parse(url), headers: headers);
+      // print(jsonDecode(response.body));
+      if (response.statusCode == 200) {
+        dynamic responseData = jsonDecode(response.body);
+        String message = responseData['message'];
+        print('Message: $message');
+        return true;
+      } else if (response.statusCode == 498 || response.statusCode == 401) {
+        var refreshToken = await SecureStorage().readSecureData('refreshToken');
+        var newAccessToken = await refreshAccessToken(refreshToken);
+        if (newAccessToken.isNotEmpty) {
+          headers['authorization'] = newAccessToken;
+          final retryResponse =
+              await http.post(Uri.parse(url), headers: headers);
+          if (retryResponse.statusCode == 200) {
+            // print('-- RetryResponse.body ${retryResponse.body}');
+            // print('-- Retry JsonDecode:${jsonDecode(retryResponse.body)}');
+            dynamic responseData = jsonDecode(retryResponse.body);
+            String message = responseData['message'];
+            print('Message: $message');
+            return true;
+          } else {
+            return false;
+          }
+        } else {
+          print('New Access Token is empty');
+          return false;
+        }
+      } else {
+        print('Failed to load data. Status code: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('Error: $e');
+      return false;
+    }
+  }
+
   Future<Student?> createNewStudent(
       String studentID, String studentName, String studentEmail) async {
-    final url = 'http://localhost:8080/api/admin/submit/student';
+    const url = 'http://localhost:8080/api/admin/submit/student';
     var accessToken = await getAccessToken();
     var request = {
       'studentID': studentID,
@@ -898,9 +998,109 @@ class API {
     }
   }
 
+  Future<bool?> updateStudent(
+    String studentID,
+    String studentName,
+  ) async {
+    final url = 'http://localhost:8080/api/admin/edit/student/$studentID';
+    var accessToken = await getAccessToken();
+    var request = {
+      'studentName': studentName,
+    };
+    var body = json.encode(request);
+    var headers = {
+      'authorization': accessToken,
+      'Content-type': 'application/json; charset=UTF-8',
+      'Accept': 'application/json',
+    };
+    try {
+      final response =
+          await http.put(Uri.parse(url), headers: headers, body: body);
+      // print(jsonDecode(response.body));
+      if (response.statusCode == 200) {
+        dynamic responseData = jsonDecode(response.body);
+        String message = responseData['message'];
+        print('Message: $message');
+        return true;
+      } else if (response.statusCode == 498 || response.statusCode == 401) {
+        var refreshToken = await SecureStorage().readSecureData('refreshToken');
+        var newAccessToken = await refreshAccessToken(refreshToken);
+        if (newAccessToken.isNotEmpty) {
+          headers['authorization'] = newAccessToken;
+          final retryResponse =
+              await http.post(Uri.parse(url), headers: headers, body: body);
+          if (retryResponse.statusCode == 200) {
+            dynamic responseData = jsonDecode(retryResponse.body);
+            String message = responseData['message'];
+            print('Message: $message');
+            return true;
+          } else {
+            return false;
+          }
+        } else {
+          print('New Access Token is empty');
+          return false;
+        }
+      } else {
+        print('Failed to load data. Status code: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('Error: $e');
+      return false;
+    }
+  }
+
+  Future<bool?> deleteStudent(
+    String studentID,
+  ) async {
+    final url = 'http://localhost:8080/api/admin/student/$studentID';
+    var accessToken = await getAccessToken();
+    var headers = {
+      'authorization': accessToken,
+    };
+    try {
+      final response = await http.delete(Uri.parse(url), headers: headers);
+      // print(jsonDecode(response.body));
+      if (response.statusCode == 200) {
+        dynamic responseData = jsonDecode(response.body);
+        String message = responseData['message'];
+        print('Message: $message');
+        return true;
+      } else if (response.statusCode == 498 || response.statusCode == 401) {
+        var refreshToken = await SecureStorage().readSecureData('refreshToken');
+        var newAccessToken = await refreshAccessToken(refreshToken);
+        if (newAccessToken.isNotEmpty) {
+          headers['authorization'] = newAccessToken;
+          final retryResponse =
+              await http.post(Uri.parse(url), headers: headers);
+          if (retryResponse.statusCode == 200) {
+            // print('-- RetryResponse.body ${retryResponse.body}');
+            // print('-- Retry JsonDecode:${jsonDecode(retryResponse.body)}');
+            dynamic responseData = jsonDecode(retryResponse.body);
+            String message = responseData['message'];
+            print('Message: $message');
+            return true;
+          } else {
+            return false;
+          }
+        } else {
+          print('New Access Token is empty');
+          return false;
+        }
+      } else {
+        print('Failed to load data. Status code: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('Error: $e');
+      return false;
+    }
+  }
+
   Future<CourseModel?> createNewCourse(String courseID, String courseName,
       int totalWeeks, int requiredWeeks, int credit) async {
-    final url = 'http://localhost:8080/api/admin/submit/course';
+    const url = 'http://localhost:8080/api/admin/submit/course';
     var accessToken = await getAccessToken();
     var request = {
       'courseID': courseID,
@@ -953,6 +1153,109 @@ class API {
     } catch (e) {
       print('Error: $e');
       return null;
+    }
+  }
+
+  Future<bool?> updateCourse(String courseID, String courseName, int totalWeeks,
+      int requiredWeeks, int credit) async {
+    final url = 'http://localhost:8080/api/admin/edit/course/$courseID';
+    var accessToken = await getAccessToken();
+    var request = {
+      'courseName': courseName,
+      'totalWeeks': totalWeeks,
+      'requiredWeeks': requiredWeeks,
+      "credit": credit
+    };
+    var body = json.encode(request);
+    var headers = {
+      'authorization': accessToken,
+      'Content-type': 'application/json; charset=UTF-8',
+      'Accept': 'application/json',
+    };
+    try {
+      final response =
+          await http.put(Uri.parse(url), headers: headers, body: body);
+      // print(jsonDecode(response.body));
+      if (response.statusCode == 200) {
+        dynamic responseData = jsonDecode(response.body);
+        String message = responseData['message'];
+        print('Message: $message');
+        return true;
+      } else if (response.statusCode == 498 || response.statusCode == 401) {
+        var refreshToken = await SecureStorage().readSecureData('refreshToken');
+        var newAccessToken = await refreshAccessToken(refreshToken);
+        if (newAccessToken.isNotEmpty) {
+          headers['authorization'] = newAccessToken;
+          final retryResponse =
+              await http.post(Uri.parse(url), headers: headers, body: body);
+          if (retryResponse.statusCode == 200) {
+            // print('-- RetryResponse.body ${retryResponse.body}');
+            // print('-- Retry JsonDecode:${jsonDecode(retryResponse.body)}');
+            dynamic responseData = jsonDecode(retryResponse.body);
+            String message = responseData['message'];
+            print('Message: $message');
+            return true;
+          } else {
+            return false;
+          }
+        } else {
+          print('New Access Token is empty');
+          return false;
+        }
+      } else {
+        print('Failed to load data. Status code: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('Error: $e');
+      return false;
+    }
+  }
+
+  Future<bool?> delteCourse(
+    String courseID,
+  ) async {
+    final url = 'http://localhost:8080/api/admin/course/$courseID';
+    var accessToken = await getAccessToken();
+    var headers = {
+      'authorization': accessToken,
+    };
+    try {
+      final response = await http.delete(Uri.parse(url), headers: headers);
+      // print(jsonDecode(response.body));
+      if (response.statusCode == 200) {
+        dynamic responseData = jsonDecode(response.body);
+        String message = responseData['message'];
+        print('Message: $message');
+        return true;
+      } else if (response.statusCode == 498 || response.statusCode == 401) {
+        var refreshToken = await SecureStorage().readSecureData('refreshToken');
+        var newAccessToken = await refreshAccessToken(refreshToken);
+        if (newAccessToken.isNotEmpty) {
+          headers['authorization'] = newAccessToken;
+          final retryResponse =
+              await http.post(Uri.parse(url), headers: headers);
+          if (retryResponse.statusCode == 200) {
+            // print('-- RetryResponse.body ${retryResponse.body}');
+            // print('-- Retry JsonDecode:${jsonDecode(retryResponse.body)}');
+            dynamic responseData = jsonDecode(retryResponse.body);
+            String message = responseData['message'];
+            print('Message: $message');
+            return true;
+          } else {
+            return false;
+          }
+        } else {
+          print('New Access Token is empty');
+          return false;
+        }
+      } else {
+        print('Failed to load data. Status code: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('Error: $e');
+      return false;
     }
   }
 }

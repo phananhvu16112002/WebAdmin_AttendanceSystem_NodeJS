@@ -86,7 +86,7 @@ class _StudentsPageState extends State<StudentsPage> {
     if (result != null) {
       setState(() {
         _excelBytes = result.files.single.bytes;
-        fileName = result.files.single.name!;
+        fileName = result.files.single.name;
       });
     }
   }
@@ -215,7 +215,7 @@ class _StudentsPageState extends State<StudentsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: MediaQuery.of(context).size.width - 250,
       height: MediaQuery.of(context).size.height,
       child: Padding(
@@ -234,7 +234,7 @@ class _StudentsPageState extends State<StudentsPage> {
             const SizedBox(
               height: 20,
             ),
-            Container(
+            SizedBox(
               width: MediaQuery.of(context).size.width - 250,
               height: 40,
               child: Row(
@@ -330,7 +330,7 @@ class _StudentsPageState extends State<StudentsPage> {
               height: 20,
             ),
             listTemp.isNotEmpty
-                ? Container(
+                ? SizedBox(
                     width: MediaQuery.of(context).size.width - 250,
                     height: 380,
                     child: Column(
@@ -542,7 +542,7 @@ class _StudentsPageState extends State<StudentsPage> {
                 child: Container(
                   padding: const EdgeInsets.all(5),
                   color: Colors.white,
-                  child: Center(
+                  child: const Center(
                     child: CustomText(
                         message: '',
                         fontSize: 12,
@@ -568,9 +568,9 @@ class _StudentsPageState extends State<StudentsPage> {
                 child: Container(
                   padding: const EdgeInsets.all(5),
                   color: Colors.white,
-                  child: Center(
+                  child: const Center(
                     child: Text('',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                           color: Colors.black,
@@ -578,35 +578,46 @@ class _StudentsPageState extends State<StudentsPage> {
                   ),
                 ),
               ),
-              TableCell(
-                child: Container(
-                  padding: const EdgeInsets.all(5),
-                  color: Colors.white,
-                  child: const Center(
-                    child: Text(
-                      'Edit',
-                      style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.primaryButton,
-                          decorationColor: AppColors.primaryButton,
-                          decoration: TextDecoration.underline),
+              InkWell(
+                onTap: () {
+                  editStudentDialog(context, studentAttendance[i].studentID,
+                      studentAttendance[i].studentName, i);
+                },
+                child: TableCell(
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    color: Colors.white,
+                    child: const Center(
+                      child: Text(
+                        'Edit',
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.primaryButton,
+                            decorationColor: AppColors.primaryButton,
+                            decoration: TextDecoration.underline),
+                      ),
                     ),
                   ),
                 ),
               ),
-              TableCell(
-                child: Container(
-                  padding: const EdgeInsets.all(5),
-                  color: Colors.white,
-                  child: const Center(
-                    child: Text('Delete',
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.importantText,
-                            decorationColor: AppColors.importantText,
-                            decoration: TextDecoration.underline)),
+              InkWell(
+                onTap: () {
+                  _deleteLecturerDialog(studentAttendance, i);
+                },
+                child: TableCell(
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    color: Colors.white,
+                    child: const Center(
+                      child: Text('Delete',
+                          style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.importantText,
+                              decorationColor: AppColors.importantText,
+                              decoration: TextDecoration.underline)),
+                    ),
                   ),
                 ),
               ),
@@ -614,6 +625,280 @@ class _StudentsPageState extends State<StudentsPage> {
           ),
       ],
     );
+  }
+
+  Future<dynamic> editStudentDialog(BuildContext context, String studentID,
+          String studentName, int index) =>
+      showDialog(
+          context: context,
+          builder: (builder) {
+            studentIDController.text = studentID;
+            studentNameController.text = studentName;
+            return Dialog(
+              child: Container(
+                width: (MediaQuery.of(context).size.width - 250) / 2 - 20,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    border: Border.all(color: Colors.black.withOpacity(0.1))),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 20, right: 20, top: 10),
+                  child: Form(
+                    // key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(
+                          height: 30,
+                        ),
+                        const Center(
+                          child: CustomText(
+                              message: 'Edit Student',
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primaryButton),
+                        ),
+                        const SizedBox(
+                          height: 15,
+                        ),
+                        const CustomText(
+                            message: 'Student ID',
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            color: AppColors.primaryText),
+                        const SizedBox(height: 5),
+                        customTextField(
+                            450,
+                            40,
+                            true,
+                            studentIDController,
+                            TextInputType.phone,
+                            const IconButton(
+                                onPressed: null,
+                                icon: Icon(Icons.card_membership_outlined,
+                                    color: Colors.blue)),
+                            'Ex: 520H0696',
+                            true),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        const CustomText(
+                            message: 'Student Name',
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            color: AppColors.primaryText),
+                        const SizedBox(height: 5),
+                        customTextField(
+                          450,
+                          40,
+                          false,
+                          studentNameController,
+                          TextInputType.phone,
+                          const IconButton(
+                              onPressed: null,
+                              icon: Icon(Icons.card_membership_outlined,
+                                  color: Colors.blue)),
+                          'Ex: Nguyen Van A',
+                          true,
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        Center(
+                          child: CustomButton(
+                              buttonName: 'Edit',
+                              backgroundColorButton: AppColors.primaryButton,
+                              borderColor: Colors.white,
+                              textColor: Colors.white,
+                              function: () async {
+                                _editLecturer(studentID,
+                                    studentNameController.text, index);
+                              },
+                              height: 40,
+                              width: 200,
+                              fontSize: 15,
+                              colorShadow: Colors.transparent,
+                              borderRadius: 10),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          });
+
+  Future<void> _editLecturer(
+      String studentID, String studentName, int index) async {
+    try {
+      _progressDialog.show();
+      var response = await API(context).updateStudent(studentID, studentName);
+      if (response != null && response) {
+        await _progressDialog.hide();
+        if (mounted) {
+          await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Edit Student"),
+                content: const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Edit student successfully"),
+                  ],
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text("OK"),
+                    onPressed: () {
+                      setState(() {
+                        listTemp[index].studentID = studentID;
+                        listTemp[index].studentName = studentName;
+                      });
+                      Navigator.of(context).pop();
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      } else {
+        await _progressDialog.hide();
+        if (mounted) {
+          await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Failed"),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Failed edit student "),
+                    const SizedBox(height: 8),
+                    Text(
+                      fileName,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text("OK"),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
+
+        print('failed');
+      }
+    } catch (e) {
+      print('error');
+    }
+  }
+
+  Future<dynamic> _deleteLecturerDialog(List<Student> studentList, int i) {
+    return showDialog(
+        context: context,
+        builder: (builder) => AlertDialog(
+              backgroundColor: Colors.white,
+              title: const CustomText(
+                  message: 'Are you want to delete student ?',
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryText),
+              actions: [
+                InkWell(
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                  child: const CustomText(
+                      message: 'Cancel',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.primaryButton),
+                ),
+                InkWell(
+                  onTap: () async {
+                    _progressDialog.show();
+                    bool? check = await API(context)
+                        .delteCourse(studentList[i].studentID);
+                    if (check != null && check) {
+                      await _progressDialog.hide();
+                      if (mounted) {
+                        showDialog(
+                          context: context,
+                          builder: (builder) => AlertDialog(
+                            title: const CustomText(
+                                message: 'Delete student successfully',
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primaryButton),
+                            actions: [
+                              InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    listTemp.removeAt(i);
+                                  });
+                                  Navigator.pop(context);
+                                  Navigator.pop(context);
+                                },
+                                child: const CustomText(
+                                    message: 'OK',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.primaryButton),
+                              )
+                            ],
+                          ),
+                        );
+                      }
+                    } else {
+                      await _progressDialog.hide();
+                      if (mounted) {
+                        showDialog(
+                          context: context,
+                          builder: (builder) => AlertDialog(
+                            title: const CustomText(
+                                message: 'Delete student failed',
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primaryButton),
+                            actions: [
+                              InkWell(
+                                onTap: () {
+                                  Navigator.pop(context);
+                                },
+                                child: const CustomText(
+                                    message: 'OK',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.importantText),
+                              )
+                            ],
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  child: const CustomText(
+                      message: 'Accept',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.importantText),
+                ),
+              ],
+            ));
   }
 
   Widget showPage(List<Student> studentAttendance) {
@@ -929,11 +1214,11 @@ class _StudentsPageState extends State<StudentsPage> {
             builder: (BuildContext context) {
               return AlertDialog(
                 title: const Text("Create Student"),
-                content: Column(
+                content: const Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Create student successfully"),
+                    Text("Create student successfully"),
                   ],
                 ),
                 actions: <Widget>[

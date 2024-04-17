@@ -32,7 +32,7 @@ class _MyAppState extends State<MyApp> {
         theme: ThemeData(
           colorScheme:
               ColorScheme.fromSeed(seedColor: AppColors.backgroundColor),
-          useMaterial3: true,
+          useMaterial3: false,
         ),
         home: const WelcomePage());
   }

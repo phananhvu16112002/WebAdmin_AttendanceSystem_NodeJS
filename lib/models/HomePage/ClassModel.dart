@@ -1,4 +1,4 @@
-import 'package:admin_attendancesystem_nodejs/models/CoursePage/CoursePage.dart';
+import 'package:admin_attendancesystem_nodejs/models/CoursePage/CourseModel.dart';
 import 'package:admin_attendancesystem_nodejs/models/LecturerPage/Teacher.dart';
 
 class ClassModel {
