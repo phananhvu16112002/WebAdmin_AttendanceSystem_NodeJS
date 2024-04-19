@@ -32,6 +32,7 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
   late ProgressDialog _progressDialog;
   Uint8List? _excelBytes;
   String fileName = '';
+  final formkey = GlobalKey<FormState>();
 
   String dropdownMenu = 'None';
   List<String> faculties = [
@@ -225,333 +226,340 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
       child: Padding(
         padding: const EdgeInsets.only(left: 20, right: 20, top: 10),
         child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(
-                height: 30,
-              ),
-              const Center(
-                child: CustomText(
-                    message: 'Create New Class',
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primaryButton),
-              ),
-              const SizedBox(height: 5),
-              Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+          child: Form(
+            key: formkey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(
+                  height: 30,
+                ),
+                const Center(
+                  child: CustomText(
+                      message: 'Create New Class',
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primaryButton),
+                ),
+                const SizedBox(height: 5),
+                Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CustomButton(
+                          buttonName: 'Import File',
+                          backgroundColorButton: Colors.white,
+                          borderColor: const Color.fromARGB(255, 205, 203, 203),
+                          textColor: AppColors.primaryButton,
+                          function: _selectFile,
+                          height: 20,
+                          width: 100,
+                          fontSize: 12,
+                          colorShadow: Colors.transparent,
+                          borderRadius: 5),
+                      const SizedBox(
+                        width: 5,
+                      ),
+                      Center(
+                        child: _excelBytes != null
+                            ? Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text('File Excel: ${fileName}'),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  // CustomButton(
+                                  //     buttonName: 'Upload',
+                                  //     backgroundColorButton:
+                                  //         const Color(0xff2d71b1),
+                                  //     borderColor: Colors.white,
+                                  //     textColor: Colors.white,
+                                  //     function: () => _uploadFile(
+                                  //         courseIDController.text,
+                                  //         lecturerIDController.text,
+                                  //         roomController.text,
+                                  //         shiftController.text,
+                                  //         startTimeController.text,
+                                  //         endTimeController.text,
+                                  //         typeController.text,
+                                  //         groupController.text,
+                                  //         subGroupController.text),
+                                  //     height: 20,
+                                  //     width: 100,
+                                  //     fontSize: 12,
+                                  //     colorShadow: Colors.transparent,
+                                  //     borderRadius: 5)
+                                ],
+                              )
+                            : const Text(''),
+                      )
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  height: 15,
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CustomButton(
-                        buttonName: 'Import File',
-                        backgroundColorButton: Colors.white,
-                        borderColor: const Color.fromARGB(255, 205, 203, 203),
-                        textColor: AppColors.primaryButton,
-                        function: _selectFile,
-                        height: 20,
-                        width: 100,
+                    const CustomText(
+                        message: 'CourseID',
                         fontSize: 12,
-                        colorShadow: Colors.transparent,
-                        borderRadius: 5),
-                    const SizedBox(
-                      width: 5,
+                        fontWeight: FontWeight.normal,
+                        color: AppColors.primaryText),
+                    const SizedBox(height: 5),
+                    customTextField(
+                        450,
+                        40,
+                        false,
+                        courseIDController,
+                        TextInputType.text,
+                        IconButton(
+                            onPressed: null,
+                            icon: Icon(Icons.person_2_outlined,
+                                color: Colors.black.withOpacity(0.5))),
+                        'Ex: 5200033',
+                        true)
+                  ],
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                const CustomText(
+                    message: 'LectuerID',
+                    fontSize: 12,
+                    fontWeight: FontWeight.normal,
+                    color: AppColors.primaryText),
+                const SizedBox(height: 5),
+                customTextField(
+                    450,
+                    40,
+                    false,
+                    lecturerIDController,
+                    TextInputType.phone,
+                    IconButton(
+                        onPressed: null,
+                        icon: Icon(Icons.card_membership_outlined,
+                            color: Colors.black.withOpacity(0.5))),
+                    'Ex: 520H0696',
+                    true),
+                const SizedBox(
+                  height: 10,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const CustomText(
+                            message: 'Room',
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            color: AppColors.primaryText),
+                        const SizedBox(height: 5),
+                        customTextField(
+                            200,
+                            40,
+                            false,
+                            roomController,
+                            TextInputType.text,
+                            IconButton(
+                                onPressed: null,
+                                icon: Icon(Icons.room_outlined,
+                                    color: Colors.black.withOpacity(0.5))),
+                            'Ex:A0505',
+                            true)
+                      ],
                     ),
-                    Center(
-                      child: _excelBytes != null
-                          ? Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text('File Excel: ${fileName}'),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                // CustomButton(
-                                //     buttonName: 'Upload',
-                                //     backgroundColorButton:
-                                //         const Color(0xff2d71b1),
-                                //     borderColor: Colors.white,
-                                //     textColor: Colors.white,
-                                //     function: () => _uploadFile(
-                                //         courseIDController.text,
-                                //         lecturerIDController.text,
-                                //         roomController.text,
-                                //         shiftController.text,
-                                //         startTimeController.text,
-                                //         endTimeController.text,
-                                //         typeController.text,
-                                //         groupController.text,
-                                //         subGroupController.text),
-                                //     height: 20,
-                                //     width: 100,
-                                //     fontSize: 12,
-                                //     colorShadow: Colors.transparent,
-                                //     borderRadius: 5)
-                              ],
-                            )
-                          : const Text(''),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const CustomText(
+                            message: 'Shift',
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            color: AppColors.primaryText),
+                        const SizedBox(height: 5),
+                        customTextField(
+                            200,
+                            40,
+                            false,
+                            shiftController,
+                            TextInputType.text,
+                            IconButton(
+                                onPressed: null,
+                                icon: Icon(Icons.filter_tilt_shift_outlined,
+                                    color: Colors.black.withOpacity(0.5))),
+                            'Ex: 3',
+                            true)
+                      ],
                     )
                   ],
                 ),
-              ),
-              const SizedBox(
-                height: 15,
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const CustomText(
-                      message: 'CourseID',
-                      fontSize: 12,
-                      fontWeight: FontWeight.normal,
-                      color: AppColors.primaryText),
-                  const SizedBox(height: 5),
-                  customTextField(
-                      450,
-                      40,
-                      false,
-                      courseIDController,
-                      TextInputType.text,
-                      IconButton(
-                          onPressed: () {},
-                          icon: Icon(Icons.person_2_outlined,
-                              color: Colors.black.withOpacity(0.5))),
-                      'Ex: 5200033',
-                      true)
-                ],
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              const CustomText(
-                  message: 'LectuerID',
-                  fontSize: 12,
-                  fontWeight: FontWeight.normal,
-                  color: AppColors.primaryText),
-              const SizedBox(height: 5),
-              customTextField(
-                  450,
-                  40,
-                  false,
-                  lecturerIDController,
-                  TextInputType.phone,
-                  IconButton(
-                      onPressed: () {},
-                      icon: Icon(Icons.card_membership_outlined,
-                          color: Colors.black.withOpacity(0.5))),
-                  'Ex: 520H0696',
-                  true),
-              const SizedBox(
-                height: 10,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const CustomText(
-                          message: 'Room',
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                          color: AppColors.primaryText),
-                      const SizedBox(height: 5),
-                      customTextField(
-                          200,
-                          40,
-                          false,
-                          roomController,
-                          TextInputType.text,
-                          IconButton(
-                              onPressed: () {},
-                              icon: Icon(Icons.room_outlined,
-                                  color: Colors.black.withOpacity(0.5))),
-                          'Ex:A0505',
-                          true)
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const CustomText(
-                          message: 'Shift',
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                          color: AppColors.primaryText),
-                      const SizedBox(height: 5),
-                      customTextField(
-                          200,
-                          40,
-                          false,
-                          shiftController,
-                          TextInputType.text,
-                          IconButton(
-                              onPressed: () {},
-                              icon: Icon(Icons.filter_tilt_shift_outlined,
-                                  color: Colors.black.withOpacity(0.5))),
-                          'Ex: 3',
-                          true)
-                    ],
-                  )
-                ],
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const CustomText(
-                          message: 'StartTime',
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                          color: AppColors.primaryText),
-                      const SizedBox(height: 5),
-                      customTextField(
-                          200,
-                          40,
-                          false,
-                          startTimeController,
-                          TextInputType.text,
-                          IconButton(
-                              onPressed: () {},
-                              icon: Icon(Icons.lock_clock_outlined,
-                                  color: Colors.black.withOpacity(0.5))),
-                          'Ex:11:11:00',
-                          true)
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const CustomText(
-                          message: 'EndTime',
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                          color: AppColors.primaryText),
-                      const SizedBox(height: 5),
-                      customTextField(
-                          200,
-                          40,
-                          false,
-                          endTimeController,
-                          TextInputType.text,
-                          IconButton(
-                              onPressed: () {},
-                              icon: Icon(Icons.lock_clock_outlined,
-                                  color: Colors.black.withOpacity(0.5))),
-                          'Ex: 15:15:00',
-                          true)
-                    ],
-                  )
-                ],
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const CustomText(
-                          message: 'Group',
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                          color: AppColors.primaryText),
-                      const SizedBox(height: 5),
-                      customTextField(
-                          200,
-                          40,
-                          false,
-                          groupController,
-                          TextInputType.text,
-                          IconButton(
-                              onPressed: () {},
-                              icon: Icon(Icons.group_work_outlined,
-                                  color: Colors.black.withOpacity(0.5))),
-                          'Ex:10',
-                          true)
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const CustomText(
-                          message: 'subGroup',
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                          color: AppColors.primaryText),
-                      const SizedBox(height: 5),
-                      customTextField(
-                          200,
-                          40,
-                          false,
-                          subGroupController,
-                          TextInputType.text,
-                          IconButton(
-                              onPressed: () {},
-                              icon: Icon(Icons.group_work_outlined,
-                                  color: Colors.black.withOpacity(0.5))),
-                          'Ex: 3',
-                          true)
-                    ],
-                  )
-                ],
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              const CustomText(
-                  message: 'Type',
-                  fontSize: 12,
-                  fontWeight: FontWeight.normal,
-                  color: AppColors.primaryText),
-              const SizedBox(
-                height: 5,
-              ),
-              customTextField(
-                  450,
-                  40,
-                  false,
-                  typeController,
-                  TextInputType.text,
-                  IconButton(
-                      onPressed: () {},
-                      icon: Icon(Icons.group_work_outlined,
-                          color: Colors.black.withOpacity(0.5))),
-                  'Ex: thesis',
-                  true),
-              const SizedBox(
-                height: 10,
-              ),
-              Center(
-                child: CustomButton(
-                    buttonName: 'Create',
-                    backgroundColorButton: AppColors.primaryButton,
-                    borderColor: Colors.white,
-                    textColor: Colors.white,
-                    function: () => _uploadFile(
-                        courseIDController.text,
-                        lecturerIDController.text,
-                        roomController.text,
-                        shiftController.text,
-                        startTimeController.text,
-                        endTimeController.text,
-                        typeController.text,
-                        groupController.text,
-                        subGroupController.text),
-                    height: 50,
-                    width: 250,
-                    fontSize: 20,
-                    colorShadow: Colors.transparent,
-                    borderRadius: 10),
-              )
-            ],
+                const SizedBox(
+                  height: 10,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const CustomText(
+                            message: 'StartTime',
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            color: AppColors.primaryText),
+                        const SizedBox(height: 5),
+                        customTextField(
+                            200,
+                            40,
+                            false,
+                            startTimeController,
+                            TextInputType.text,
+                            IconButton(
+                                onPressed: null,
+                                icon: Icon(Icons.lock_clock_outlined,
+                                    color: Colors.black.withOpacity(0.5))),
+                            'Ex:11:11:00',
+                            true)
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const CustomText(
+                            message: 'EndTime',
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            color: AppColors.primaryText),
+                        const SizedBox(height: 5),
+                        customTextField(
+                            200,
+                            40,
+                            false,
+                            endTimeController,
+                            TextInputType.text,
+                            IconButton(
+                                onPressed: null,
+                                icon: Icon(Icons.lock_clock_outlined,
+                                    color: Colors.black.withOpacity(0.5))),
+                            'Ex: 15:15:00',
+                            true)
+                      ],
+                    )
+                  ],
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const CustomText(
+                            message: 'Group',
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            color: AppColors.primaryText),
+                        const SizedBox(height: 5),
+                        customTextField(
+                            200,
+                            40,
+                            false,
+                            groupController,
+                            TextInputType.text,
+                            IconButton(
+                                onPressed: null,
+                                icon: Icon(Icons.group_work_outlined,
+                                    color: Colors.black.withOpacity(0.5))),
+                            'Ex:10',
+                            true)
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const CustomText(
+                            message: 'subGroup',
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            color: AppColors.primaryText),
+                        const SizedBox(height: 5),
+                        customTextField(
+                            200,
+                            40,
+                            false,
+                            subGroupController,
+                            TextInputType.text,
+                            IconButton(
+                                onPressed: null,
+                                icon: Icon(Icons.group_work_outlined,
+                                    color: Colors.black.withOpacity(0.5))),
+                            'Ex: 3',
+                            true)
+                      ],
+                    )
+                  ],
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                const CustomText(
+                    message: 'Type',
+                    fontSize: 12,
+                    fontWeight: FontWeight.normal,
+                    color: AppColors.primaryText),
+                const SizedBox(
+                  height: 5,
+                ),
+                customTextField(
+                    450,
+                    40,
+                    false,
+                    typeController,
+                    TextInputType.text,
+                    IconButton(
+                        onPressed: null,
+                        icon: Icon(Icons.group_work_outlined,
+                            color: Colors.black.withOpacity(0.5))),
+                    'Ex: thesis',
+                    true),
+                const SizedBox(
+                  height: 10,
+                ),
+                Center(
+                  child: CustomButton(
+                      buttonName: 'Create',
+                      backgroundColorButton: AppColors.primaryButton,
+                      borderColor: Colors.white,
+                      textColor: Colors.white,
+                      function: () {
+                        if (formkey.currentState!.validate()) {
+                          _uploadFile(
+                              courseIDController.text,
+                              lecturerIDController.text,
+                              roomController.text,
+                              shiftController.text,
+                              startTimeController.text,
+                              endTimeController.text,
+                              typeController.text,
+                              groupController.text,
+                              subGroupController.text);
+                        }
+                      },
+                      height: 50,
+                      width: 250,
+                      fontSize: 20,
+                      colorShadow: Colors.transparent,
+                      borderRadius: 10),
+                )
+              ],
+            ),
           ),
         ),
       ),

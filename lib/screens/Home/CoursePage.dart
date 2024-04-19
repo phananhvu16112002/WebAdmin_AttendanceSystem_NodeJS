@@ -659,7 +659,7 @@ class _StudentsPageState extends State<CoursePage> {
                   onTap: () async {
                     _progressDialog.show();
                     bool? check = await API(context)
-                        .delteCourse(studentAttendance[i].courseID);
+                        .deleteCourse(studentAttendance[i].courseID);
                     if (check != null && check) {
                       await _progressDialog.hide();
                       if (mounted) {
@@ -863,46 +863,52 @@ class _StudentsPageState extends State<CoursePage> {
     );
   }
 
-  Future<dynamic> createNewCourse(BuildContext context) => showDialog(
-      context: context,
-      builder: (builder) => Dialog(
-            backgroundColor: Colors.white,
-            child: Container(
-              width: (MediaQuery.of(context).size.width - 250) / 2 - 20,
-              height: 600,
-              decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: const BorderRadius.all(Radius.circular(10)),
-                  border: Border.all(color: Colors.black.withOpacity(0.1))),
-              child: Padding(
-                padding: const EdgeInsets.only(left: 20, right: 20, top: 10),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(
-                        height: 30,
-                      ),
-                      const Center(
-                        child: CustomText(
-                            message: 'Create New Course',
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primaryButton),
-                      ),
-                      const SizedBox(
-                        height: 15,
-                      ),
-                      const CustomText(
-                          message: 'Course ID',
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                          color: AppColors.primaryText),
-                      const SizedBox(height: 5),
-                      customTextField(
-                          450,
-                          40,
+  Future<dynamic> createNewCourse(BuildContext context) {
+    courseIDController.text = '';
+    courseNameController.text = '';
+    totalWeeks.text = '';
+    requiredWeeks.text = '';
+    credit.text = '';
+    return showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (builder) => Dialog(
+              backgroundColor: Colors.white,
+              child: Container(
+                width: (MediaQuery.of(context).size.width - 250) / 2 - 20,
+                // height: 600,
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    border: Border.all(color: Colors.black.withOpacity(0.1))),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 20, right: 20, top: 10),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(
+                          height: 30,
+                        ),
+                        const Center(
+                          child: CustomText(
+                              message: 'Create New Course',
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primaryButton),
+                        ),
+                        const SizedBox(
+                          height: 15,
+                        ),
+                        const CustomText(
+                            message: 'Course ID',
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            color: AppColors.primaryText),
+                        const SizedBox(height: 5),
+                        customTextField(
                           false,
                           courseIDController,
                           TextInputType.phone,
@@ -911,24 +917,18 @@ class _StudentsPageState extends State<CoursePage> {
                               icon: const Icon(Icons.card_membership_outlined,
                                   color: Colors.blue)),
                           'Ex: 520H0696',
-                          true, (value) {
-                        if (value!.isEmpty || value == '') {
-                          return 'Name CourseID is required';
-                        }
-                        return null;
-                      }),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      const CustomText(
-                          message: 'Course Name',
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                          color: AppColors.primaryText),
-                      const SizedBox(height: 5),
-                      customTextField(
-                          450,
-                          40,
+                          true,
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        const CustomText(
+                            message: 'Course Name',
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            color: AppColors.primaryText),
+                        const SizedBox(height: 5),
+                        customTextField(
                           false,
                           courseNameController,
                           TextInputType.phone,
@@ -937,24 +937,18 @@ class _StudentsPageState extends State<CoursePage> {
                               icon: const Icon(Icons.card_membership_outlined,
                                   color: Colors.blue)),
                           'Ex: Nguyen Van A',
-                          true, (value) {
-                        if (value!.isEmpty || value == '') {
-                          return 'Name Course is required';
-                        }
-                        return null;
-                      }),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      const CustomText(
-                          message: 'Total Weeks',
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                          color: AppColors.primaryText),
-                      const SizedBox(height: 5),
-                      customTextField(
-                          450,
-                          40,
+                          true,
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        const CustomText(
+                            message: 'Total Weeks',
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            color: AppColors.primaryText),
+                        const SizedBox(height: 5),
+                        customTextField(
                           false,
                           totalWeeks,
                           TextInputType.phone,
@@ -963,24 +957,18 @@ class _StudentsPageState extends State<CoursePage> {
                               icon: const Icon(Icons.email_outlined,
                                   color: Color.fromARGB(255, 230, 107, 98))),
                           'Ex: 10',
-                          true, (value) {
-                        if (value!.isEmpty || value == '') {
-                          return 'Total Weeks Course is required';
-                        }
-                        return null;
-                      }),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      const CustomText(
-                          message: 'Required Weeks',
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                          color: AppColors.primaryText),
-                      const SizedBox(height: 5),
-                      customTextField(
-                          450,
-                          40,
+                          true,
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        const CustomText(
+                            message: 'Required Weeks',
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            color: AppColors.primaryText),
+                        const SizedBox(height: 5),
+                        customTextField(
                           false,
                           requiredWeeks,
                           TextInputType.phone,
@@ -989,24 +977,18 @@ class _StudentsPageState extends State<CoursePage> {
                               icon: const Icon(Icons.email_outlined,
                                   color: Color.fromARGB(255, 230, 107, 98))),
                           'Ex: 10',
-                          true, (value) {
-                        if (value!.isEmpty || value == '') {
-                          return 'Required Weeks Course is required';
-                        }
-                        return null;
-                      }),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      const CustomText(
-                          message: 'Credit',
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                          color: AppColors.primaryText),
-                      const SizedBox(height: 5),
-                      customTextField(
-                          450,
-                          40,
+                          true,
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        const CustomText(
+                            message: 'Credit',
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            color: AppColors.primaryText),
+                        const SizedBox(height: 5),
+                        customTextField(
                           false,
                           credit,
                           TextInputType.phone,
@@ -1015,39 +997,70 @@ class _StudentsPageState extends State<CoursePage> {
                               icon: const Icon(Icons.email_outlined,
                                   color: Color.fromARGB(255, 230, 107, 98))),
                           'Ex: 10',
-                          true, (value) {
-                        if (value!.isEmpty || value == '') {
-                          return 'Credit Course is required';
-                        }
-                        return null;
-                      }),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      Center(
-                        child: CustomButton(
-                            buttonName: 'Create',
-                            backgroundColorButton: AppColors.primaryButton,
-                            borderColor: Colors.white,
-                            textColor: Colors.white,
-                            function: () => _submitCourse(
-                                courseIDController.text,
-                                courseNameController.text,
-                                int.parse(totalWeeks.text.toString()),
-                                int.parse(requiredWeeks.text.toString()),
-                                int.parse(credit.text.toString())),
-                            height: 40,
-                            width: 200,
-                            fontSize: 15,
-                            colorShadow: Colors.transparent,
-                            borderRadius: 10),
-                      )
-                    ],
+                          true,
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CustomButton(
+                                buttonName: 'Cancel',
+                                backgroundColorButton: Colors.transparent,
+                                borderColor: Colors.white,
+                                textColor: AppColors.primaryText,
+                                function: () {
+                                  setState(() {
+                                    courseIDController.text = '';
+                                    courseNameController.text = '';
+                                    totalWeeks.text = '';
+                                    requiredWeeks.text = '';
+                                    credit.text = '';
+                                  });
+                                  Navigator.pop(context);
+                                },
+                                height: 40,
+                                width: 200,
+                                fontSize: 15,
+                                colorShadow: Colors.transparent,
+                                borderRadius: 10),
+                            SizedBox(
+                              width: 20,
+                            ),
+                            CustomButton(
+                                buttonName: 'Create',
+                                backgroundColorButton: AppColors.primaryButton,
+                                borderColor: Colors.white,
+                                textColor: Colors.white,
+                                function: () {
+                                  if (_formKey.currentState!.validate()) {
+                                    _submitCourse(
+                                        courseIDController.text,
+                                        courseNameController.text,
+                                        int.parse(totalWeeks.text.toString()),
+                                        int.parse(
+                                            requiredWeeks.text.toString()),
+                                        int.parse(credit.text.toString()));
+                                  }
+                                },
+                                height: 40,
+                                width: 200,
+                                fontSize: 15,
+                                colorShadow: Colors.transparent,
+                                borderRadius: 10),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ));
+            ));
+  }
 
   Future<dynamic> editCourse(BuildContext context, String courseID,
           String courseName, int total, int required, int cre, int index) =>
@@ -1075,6 +1088,7 @@ class _StudentsPageState extends State<CoursePage> {
                     key: _formKey,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         const SizedBox(
                           height: 30,
@@ -1096,22 +1110,16 @@ class _StudentsPageState extends State<CoursePage> {
                             color: AppColors.primaryText),
                         const SizedBox(height: 5),
                         customTextField(
-                            450,
-                            40,
-                            true,
-                            courseIDController,
-                            TextInputType.phone,
-                            const IconButton(
-                                onPressed: null,
-                                icon: Icon(Icons.card_membership_outlined,
-                                    color: Colors.blue)),
-                            'Ex: 520H0696',
-                            true, (value) {
-                          if (value!.isEmpty || value == '') {
-                            return 'Name CourseID is required';
-                          }
-                          return null;
-                        }),
+                          true,
+                          courseIDController,
+                          TextInputType.phone,
+                          const IconButton(
+                              onPressed: null,
+                              icon: Icon(Icons.card_membership_outlined,
+                                  color: Colors.blue)),
+                          'Ex: 520H0696',
+                          true,
+                        ),
                         const SizedBox(
                           height: 10,
                         ),
@@ -1122,22 +1130,16 @@ class _StudentsPageState extends State<CoursePage> {
                             color: AppColors.primaryText),
                         const SizedBox(height: 5),
                         customTextField(
-                            450,
-                            40,
-                            false,
-                            courseNameController,
-                            TextInputType.phone,
-                            const IconButton(
-                                onPressed: null,
-                                icon: Icon(Icons.card_membership_outlined,
-                                    color: Colors.blue)),
-                            'Ex: Nguyen Van A',
-                            true, (value) {
-                          if (value!.isEmpty || value == '') {
-                            return 'Name Course is required';
-                          }
-                          return null;
-                        }),
+                          false,
+                          courseNameController,
+                          TextInputType.phone,
+                          const IconButton(
+                              onPressed: null,
+                              icon: Icon(Icons.card_membership_outlined,
+                                  color: Colors.blue)),
+                          'Ex: Nguyen Van A',
+                          true,
+                        ),
                         const SizedBox(
                           height: 10,
                         ),
@@ -1148,22 +1150,16 @@ class _StudentsPageState extends State<CoursePage> {
                             color: AppColors.primaryText),
                         const SizedBox(height: 5),
                         customTextField(
-                            450,
-                            40,
-                            false,
-                            totalWeeks,
-                            TextInputType.phone,
-                            const IconButton(
-                                onPressed: null,
-                                icon: Icon(Icons.email_outlined,
-                                    color: Color.fromARGB(255, 230, 107, 98))),
-                            'Ex: 10',
-                            true, (value) {
-                          if (value!.isEmpty || value == '') {
-                            return 'Total Weeks Course is required';
-                          }
-                          return null;
-                        }),
+                          false,
+                          totalWeeks,
+                          TextInputType.phone,
+                          const IconButton(
+                              onPressed: null,
+                              icon: Icon(Icons.email_outlined,
+                                  color: Color.fromARGB(255, 230, 107, 98))),
+                          'Ex: 10',
+                          true,
+                        ),
                         const SizedBox(
                           height: 10,
                         ),
@@ -1174,22 +1170,16 @@ class _StudentsPageState extends State<CoursePage> {
                             color: AppColors.primaryText),
                         const SizedBox(height: 5),
                         customTextField(
-                            450,
-                            40,
-                            false,
-                            requiredWeeks,
-                            TextInputType.phone,
-                            const IconButton(
-                                onPressed: null,
-                                icon: Icon(Icons.email_outlined,
-                                    color: Color.fromARGB(255, 230, 107, 98))),
-                            'Ex: 10',
-                            true, (value) {
-                          if (value!.isEmpty || value == '') {
-                            return 'Required Weeks Course is required';
-                          }
-                          return null;
-                        }),
+                          false,
+                          requiredWeeks,
+                          TextInputType.phone,
+                          const IconButton(
+                              onPressed: null,
+                              icon: Icon(Icons.email_outlined,
+                                  color: Color.fromARGB(255, 230, 107, 98))),
+                          'Ex: 10',
+                          true,
+                        ),
                         const SizedBox(
                           height: 10,
                         ),
@@ -1200,22 +1190,16 @@ class _StudentsPageState extends State<CoursePage> {
                             color: AppColors.primaryText),
                         const SizedBox(height: 5),
                         customTextField(
-                            450,
-                            40,
-                            false,
-                            credit,
-                            TextInputType.phone,
-                            IconButton(
-                                onPressed: () {},
-                                icon: const Icon(Icons.email_outlined,
-                                    color: Color.fromARGB(255, 230, 107, 98))),
-                            'Ex: 10',
-                            true, (value) {
-                          if (value!.isEmpty || value == '') {
-                            return 'Credit Course is required';
-                          }
-                          return null;
-                        }),
+                          false,
+                          credit,
+                          TextInputType.phone,
+                          IconButton(
+                              onPressed: () {},
+                              icon: const Icon(Icons.email_outlined,
+                                  color: Color.fromARGB(255, 230, 107, 98))),
+                          'Ex: 10',
+                          true,
+                        ),
                         const SizedBox(
                           height: 20,
                         ),
@@ -1249,28 +1233,19 @@ class _StudentsPageState extends State<CoursePage> {
           });
 
   Widget customTextField(
-      double width,
-      double height,
       bool readOnly,
       TextEditingController controller,
       TextInputType textInputType,
       IconButton iconSuffix,
       String hintText,
-      bool enabled,
-      String? Function(String?)? validator) {
+      bool enabled) {
     return Container(
-      width: width,
-      height: height,
+      // width: width,
+      // height: height,
       decoration: BoxDecoration(
           color: Colors.white,
-          border: Border(
-              top: BorderSide(color: Colors.black.withOpacity(0.2)),
-              left: BorderSide(color: Colors.black.withOpacity(0.2)),
-              right: BorderSide(color: Colors.black.withOpacity(0.2)),
-              bottom: BorderSide(color: Colors.black.withOpacity(0.2))),
           borderRadius: const BorderRadius.all(Radius.circular(5))),
       child: TextFormField(
-        validator: validator,
         enabled: enabled,
         readOnly: readOnly,
         controller: controller,
@@ -1286,13 +1261,25 @@ class _StudentsPageState extends State<CoursePage> {
             hintText: hintText,
             hintStyle:
                 TextStyle(fontSize: 12, color: Colors.black.withOpacity(0.5)),
-            enabledBorder: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(5)),
-                borderSide: BorderSide(width: 1, color: Colors.transparent)),
-            focusedBorder: const OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(5)),
-              borderSide: BorderSide(width: 1, color: AppColors.primaryButton),
-            )),
+            border: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(5)),
+                borderSide:
+                    BorderSide(width: 1, color: Colors.black.withOpacity(0.2))),
+            enabledBorder: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(5)),
+                borderSide:
+                    BorderSide(width: 1, color: Colors.black.withOpacity(0.2))),
+            // errorBorder: ,
+            focusedBorder: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(5)),
+                borderSide: BorderSide(
+                    width: 1, color: Colors.black.withOpacity(0.5)))),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'This field is required';
+          }
+          return null;
+        },
       ),
     );
   }
@@ -1407,7 +1394,7 @@ class _StudentsPageState extends State<CoursePage> {
                         listTemp[index].requiredWeeks = requiredWeeks;
                         listTemp[index].credit = credit;
                       });
-                      Navigator.of(context).pop();
+                      Navigator.pop(context);
                       Navigator.pop(context);
                     },
                   ),

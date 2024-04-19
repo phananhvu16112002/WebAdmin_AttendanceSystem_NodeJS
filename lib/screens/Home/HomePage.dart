@@ -6,6 +6,7 @@ import 'package:admin_attendancesystem_nodejs/common/base/CustomTextField.dart';
 import 'package:admin_attendancesystem_nodejs/common/colors/color.dart';
 import 'package:admin_attendancesystem_nodejs/models/Class.dart';
 import 'package:admin_attendancesystem_nodejs/models/HomePage/ClassModel.dart';
+import 'package:admin_attendancesystem_nodejs/screens/Authentication/WelcomePage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CoursePage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CreateNewLectuer.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CreateNewStudent.dart';
@@ -17,6 +18,7 @@ import 'package:admin_attendancesystem_nodejs/screens/Home/SettingPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/StudentsPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Test.dart';
 import 'package:admin_attendancesystem_nodejs/services/API.dart';
+import 'package:admin_attendancesystem_nodejs/services/SecureStorage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -42,11 +44,36 @@ class _HomePageState extends State<HomePage> {
   OverlayEntry? overlayEntry;
 
   bool isCollapsedOpen = true;
+  SecureStorage storage = SecureStorage();
 
   void toggleDrawer() {
     setState(() {
       isCollapsedOpen = !isCollapsedOpen;
     });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _loadToken();
+
+  }
+
+
+  Future<void> _loadToken() async {
+    String? loadToken = await storage.readSecureData('accessToken');
+    String? refreshToken1 = await storage.readSecureData('refreshToken');
+    if (loadToken.isEmpty ||
+        refreshToken1.isEmpty ||
+        loadToken.contains('No Data Found') ||
+        refreshToken1.contains('No Data Found')) {
+      // ignore: use_build_context_synchronously
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const WelcomePage()),
+      );
+    }
   }
 
   @override

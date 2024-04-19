@@ -38,8 +38,7 @@ class API {
         return newAccessToken;
       } else if (response.statusCode == 401) {
         print('Refresh Token is expired'); // Navigation to welcomePage
-        await SecureStorage().deleteSecureData('refreshToken');
-        await SecureStorage().deleteSecureData('accessToken');
+
         // ignore: use_build_context_synchronously
         showDialog(
           context: context,
@@ -47,6 +46,8 @@ class API {
             return WillPopScope(
               onWillPop: () async {
                 // Navigate to WelcomePage when dialog is dismissed
+                await SecureStorage().deleteSecureData('refreshToken');
+                await SecureStorage().deleteSecureData('accessToken');
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
@@ -63,7 +64,9 @@ class API {
                     'Your session has expired. Please log in again.'),
                 actions: <Widget>[
                   TextButton(
-                    onPressed: () {
+                    onPressed: () async {
+                      await SecureStorage().deleteSecureData('refreshToken');
+                      await SecureStorage().deleteSecureData('accessToken');
                       Navigator.of(context).pop();
                       Navigator.pushReplacement(
                         context,
@@ -872,14 +875,18 @@ class API {
         if (newAccessToken.isNotEmpty) {
           headers['authorization'] = newAccessToken;
           final retryResponse =
-              await http.post(Uri.parse(url), headers: headers, body: body);
-          if (retryResponse.statusCode == 200) {
-            dynamic responseData = jsonDecode(retryResponse.body);
-            String message = responseData['message'];
-            print('Message: $message');
-            return true;
-          } else {
-            return false;
+              await http.put(Uri.parse(url), headers: headers, body: body);
+          try {
+            if (retryResponse.statusCode == 200) {
+              dynamic responseData = jsonDecode(retryResponse.body);
+              String message = responseData['message'];
+              print('Message: $message');
+              return true;
+            } else {
+              return false;
+            }
+          } catch (e) {
+            print('err:$e');
           }
         } else {
           print('New Access Token is empty');
@@ -917,7 +924,7 @@ class API {
         if (newAccessToken.isNotEmpty) {
           headers['authorization'] = newAccessToken;
           final retryResponse =
-              await http.post(Uri.parse(url), headers: headers);
+              await http.delete(Uri.parse(url), headers: headers);
           if (retryResponse.statusCode == 200) {
             // print('-- RetryResponse.body ${retryResponse.body}');
             // print('-- Retry JsonDecode:${jsonDecode(retryResponse.body)}');
@@ -1028,7 +1035,7 @@ class API {
         if (newAccessToken.isNotEmpty) {
           headers['authorization'] = newAccessToken;
           final retryResponse =
-              await http.post(Uri.parse(url), headers: headers, body: body);
+              await http.put(Uri.parse(url), headers: headers, body: body);
           if (retryResponse.statusCode == 200) {
             dynamic responseData = jsonDecode(retryResponse.body);
             String message = responseData['message'];
@@ -1073,7 +1080,7 @@ class API {
         if (newAccessToken.isNotEmpty) {
           headers['authorization'] = newAccessToken;
           final retryResponse =
-              await http.post(Uri.parse(url), headers: headers);
+              await http.delete(Uri.parse(url), headers: headers);
           if (retryResponse.statusCode == 200) {
             // print('-- RetryResponse.body ${retryResponse.body}');
             // print('-- Retry JsonDecode:${jsonDecode(retryResponse.body)}');
@@ -1187,7 +1194,7 @@ class API {
         if (newAccessToken.isNotEmpty) {
           headers['authorization'] = newAccessToken;
           final retryResponse =
-              await http.post(Uri.parse(url), headers: headers, body: body);
+              await http.put(Uri.parse(url), headers: headers, body: body);
           if (retryResponse.statusCode == 200) {
             // print('-- RetryResponse.body ${retryResponse.body}');
             // print('-- Retry JsonDecode:${jsonDecode(retryResponse.body)}');
@@ -1212,7 +1219,7 @@ class API {
     }
   }
 
-  Future<bool?> delteCourse(
+  Future<bool?> deleteCourse(
     String courseID,
   ) async {
     final url = 'http://localhost:8080/api/admin/course/$courseID';
@@ -1234,7 +1241,7 @@ class API {
         if (newAccessToken.isNotEmpty) {
           headers['authorization'] = newAccessToken;
           final retryResponse =
-              await http.post(Uri.parse(url), headers: headers);
+              await http.delete(Uri.parse(url), headers: headers);
           if (retryResponse.statusCode == 200) {
             // print('-- RetryResponse.body ${retryResponse.body}');
             // print('-- Retry JsonDecode:${jsonDecode(retryResponse.body)}');
