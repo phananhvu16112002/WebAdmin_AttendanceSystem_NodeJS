@@ -1,14 +1,20 @@
 import 'dart:ui';
 
 import 'package:admin_attendancesystem_nodejs/common/colors/color.dart';
-import 'package:admin_attendancesystem_nodejs/screens/Authentication/WelcomePage.dart';
+import 'package:admin_attendancesystem_nodejs/providers/selected_detail_provider.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/HomePage.dart';
-import 'package:admin_attendancesystem_nodejs/screens/Home/Test/HomePageTest.dart';
-import 'package:admin_attendancesystem_nodejs/screens/Test.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => SelectedPageProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {

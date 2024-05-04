@@ -3,48 +3,55 @@ import 'dart:typed_data';
 
 import 'package:admin_attendancesystem_nodejs/common/base/CustomButton.dart';
 import 'package:admin_attendancesystem_nodejs/common/base/CustomText.dart';
+import 'package:admin_attendancesystem_nodejs/common/base/CustomTextField.dart';
 import 'package:admin_attendancesystem_nodejs/common/colors/color.dart';
-import 'package:admin_attendancesystem_nodejs/models/CoursePage/CourseModel.dart';
-
+import 'package:admin_attendancesystem_nodejs/models/DetailPage/StudentDetail.dart';
+import 'package:admin_attendancesystem_nodejs/models/HomePage/ClassModel.dart';
 import 'package:admin_attendancesystem_nodejs/models/StudentPage/Student.dart';
-import 'package:admin_attendancesystem_nodejs/screens/DetailCourse/detail_course_screen.dart';
-
+import 'package:admin_attendancesystem_nodejs/models/test/StudentTest.dart';
+import 'package:admin_attendancesystem_nodejs/models/test/StudentTest.dart';
+import 'package:admin_attendancesystem_nodejs/screens/Home/HomePage.dart';
 import 'package:admin_attendancesystem_nodejs/services/API.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
 
-class CoursePage extends StatefulWidget {
-  const CoursePage({super.key});
+class DetailPage extends StatefulWidget {
+  const DetailPage({super.key, required this.classModel});
+  final ClassModel classModel;
 
   @override
-  State<CoursePage> createState() => _StudentsPageState();
+  State<DetailPage> createState() => _DetailPageState();
 }
 
-class _StudentsPageState extends State<CoursePage> {
+class _DetailPageState extends State<DetailPage> {
   TextEditingController searchInDashboardController = TextEditingController();
-  TextEditingController courseIDController = TextEditingController();
-  TextEditingController courseNameController = TextEditingController();
-  TextEditingController totalWeeks = TextEditingController();
-  TextEditingController requiredWeeks = TextEditingController();
-  TextEditingController credit = TextEditingController();
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  TextEditingController studentIDController = TextEditingController();
+  TextEditingController studentNameController = TextEditingController();
+  TextEditingController studentEmailController = TextEditingController();
+  TextEditingController searchController = TextEditingController();
+
+  bool checkHome = true;
+  bool checkChart = false;
 
   int currentPage = 0;
   int studentsPerPage = 10;
-  List<CourseModel> listData = [];
-  List<CourseModel> listTemp = [];
-  List<CourseModel> searchResult = [];
+  List<StudentDetail> listData = [];
+  List<StudentDetail> listTemp = [];
+  List<StudentDetail> searchResult = [];
   // List<StudentTest> listData = StudentTest.listData();
   // List<StudentTest> listTemp = [];
   // List<StudentTest> searchResult = [];
-  late Future<List<CourseModel>> _fetchListStudent;
+  late Future<List<StudentDetail>> _fetchListStudent;
   late ProgressDialog _progressDialog;
   Uint8List? _excelBytes;
   String fileName = '';
+  final formkey = GlobalKey<FormState>();
+  bool isCollapsedOpen = true;
 
   void fetchData() async {
-    _fetchListStudent = API(context).getCourses();
+    _fetchListStudent =
+        API(context).getStudentsInClass(widget.classModel.classID);
     _fetchListStudent.then((value) {
       setState(() {
         listData = value;
@@ -61,17 +68,20 @@ class _StudentsPageState extends State<CoursePage> {
       });
       return;
     }
-    List<CourseModel> temp = listData;
+    List<StudentDetail> temp = listData;
     for (var element in temp) {
-      if (element.courseName.contains(query) ||
-          element.courseName.toLowerCase().trim() ==
+      if (element.studentEmail!.contains(query) ||
+          element.studentEmail!.toLowerCase().trim() ==
               query.toLowerCase().trim() ||
-          element.courseID.contains(query) ||
-          element.courseID.toLowerCase().trim() == query.toLowerCase().trim()) {
+          element.studentName!.contains(query) ||
+          element.studentName?.toLowerCase().trim() ==
+              query.toLowerCase().trim() ||
+          element.studentID!.contains(query) ||
+          element.studentID?.toLowerCase().trim() ==
+              query.toLowerCase().trim()) {
         searchResult.add(element);
       }
     }
-    print('----SearchResult: $searchResult');
     setState(() {
       currentPage = 0;
       listTemp = searchResult;
@@ -92,92 +102,98 @@ class _StudentsPageState extends State<CoursePage> {
     }
   }
 
-  Future<void> _uploadFile() async {
-    if (_excelBytes == null) {
-      // Fluttertoast.showToast(msg: 'Please select a file to upload');
-      print('null');
-      return;
-    }
-    try {
-      _progressDialog.show();
-      var response = await API(context).uploadExcelCourses(_excelBytes!);
-      print('response: $response');
-      if (response!.isNotEmpty) {
-        await _progressDialog.hide();
-        if (mounted) {
-          await showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text("Upload Excel"),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text("Upload file excel to server successfully"),
-                    const SizedBox(height: 8),
-                    Text(
-                      fileName,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                actions: <Widget>[
-                  TextButton(
-                    child: const Text("OK"),
-                    onPressed: () {
-                      setState(() {
-                        fileName = '';
-                        listTemp.addAll(response);
-                      });
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
-          );
-        }
+  // Future<void> _uploadFile() async {
+  //   if (_excelBytes == null) {
+  //     // Fluttertoast.showToast(msg: 'Please select a file to upload');
+  //     print('null');
+  //     return;
+  //   }
+  //   try {
+  //     _progressDialog.show();
+  //     var response = await API(context).uploadExcelStudent(_excelBytes!);
+  //     print('response: $response');
+  //     if (response!.isNotEmpty) {
+  //       await _progressDialog.hide();
+  //       if (mounted) {
+  //         await showDialog(
+  //           context: context,
+  //           builder: (BuildContext context) {
+  //             return AlertDialog(
+  //               title: const Text("Upload Excel"),
+  //               content: Column(
+  //                 mainAxisSize: MainAxisSize.min,
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: [
+  //                   const Text("Upload file excel to server successfully"),
+  //                   const SizedBox(height: 8),
+  //                   Text(
+  //                     fileName,
+  //                     style: const TextStyle(fontWeight: FontWeight.bold),
+  //                   ),
+  //                 ],
+  //               ),
+  //               actions: <Widget>[
+  //                 TextButton(
+  //                   child: const Text("OK"),
+  //                   onPressed: () {
+  //                     setState(() {
+  //                       fileName = '';
+  //                       listTemp.addAll(response);
+  //                     });
+  //                     Navigator.of(context).pop();
+  //                   },
+  //                 ),
+  //               ],
+  //             );
+  //           },
+  //         );
+  //       }
 
-        print('ok');
-      } else {
-        await _progressDialog.hide();
-        if (mounted) {
-          await showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text("Upload Excel"),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text("Failed upload file excel to server "),
-                    const SizedBox(height: 8),
-                    Text(
-                      fileName,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                actions: <Widget>[
-                  TextButton(
-                    child: const Text("OK"),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
-          );
-        }
+  //       print('ok');
+  //     } else {
+  //       await _progressDialog.hide();
+  //       if (mounted) {
+  //         await showDialog(
+  //           context: context,
+  //           builder: (BuildContext context) {
+  //             return AlertDialog(
+  //               title: const Text("Upload Excel"),
+  //               content: Column(
+  //                 mainAxisSize: MainAxisSize.min,
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: [
+  //                   const Text("Failed upload file excel to server "),
+  //                   const SizedBox(height: 8),
+  //                   Text(
+  //                     fileName,
+  //                     style: const TextStyle(fontWeight: FontWeight.bold),
+  //                   ),
+  //                 ],
+  //               ),
+  //               actions: <Widget>[
+  //                 TextButton(
+  //                   child: const Text("OK"),
+  //                   onPressed: () {
+  //                     Navigator.of(context).pop();
+  //                   },
+  //                 ),
+  //               ],
+  //             );
+  //           },
+  //         );
+  //       }
 
-        print('failed');
-      }
-    } catch (e) {
-      print('error');
-    }
+  //       print('failed');
+  //     }
+  //   } catch (e) {
+  //     print('error');
+  //   }
+  // }
+
+  void toggleDrawer() {
+    setState(() {
+      isCollapsedOpen = !isCollapsedOpen;
+    });
   }
 
   @override
@@ -216,6 +232,272 @@ class _StudentsPageState extends State<CoursePage> {
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: appBar(),
+      body: SingleChildScrollView(
+        child: Row(
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              width: isCollapsedOpen ? 250 : 70,
+              child: isCollapsedOpen ? leftHeader() : collapsedSideBar(),
+            ),
+            Expanded(
+              child: selectedPage(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  PreferredSizeWidget appBar() {
+    return AppBar(
+      leading: Icon(null),
+      backgroundColor: AppColors.colorHeader,
+      flexibleSpace: Padding(
+        padding:
+            const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (builder) => const HomePage()));
+                  },
+                  mouseCursor: SystemMouseCursors.click,
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    width: 50,
+                    height: 50,
+                  ),
+                ),
+                const SizedBox(width: 180),
+                IconButton(
+                    onPressed: () {
+                      toggleDrawer();
+                    },
+                    icon: const Icon(
+                      Icons.menu,
+                      size: 25,
+                      color: AppColors.textName,
+                    ))
+              ],
+            ),
+            Row(
+              children: [
+                CustomTextField(
+                  controller: searchController,
+                  textInputType: TextInputType.text,
+                  obscureText: false,
+                  suffixIcon: IconButton(
+                      onPressed: () {}, icon: const Icon(Icons.search)),
+                  hintText: 'Search',
+                  prefixIcon: const Icon(null),
+                  readOnly: false,
+                  height: 40,
+                  width: 350,
+                ),
+                const SizedBox(
+                  width: 60,
+                ),
+                IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.notifications_none_outlined)),
+                const SizedBox(
+                  width: 10,
+                ),
+                IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.messenger_outline_sharp)),
+                const SizedBox(
+                  width: 10,
+                ),
+                MouseRegion(
+                  onHover: (event) => showMenu(
+                    color: Colors.white,
+                    context: context,
+                    position: const RelativeRect.fromLTRB(300, 50, 30, 100),
+                    items: [
+                      const PopupMenuItem(
+                        child: Text("My Profile"),
+                      ),
+                      const PopupMenuItem(
+                        child: Text("Log Out"),
+                      ),
+                    ],
+                  ),
+                  child: Container(
+                    child: const Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: Colors.transparent,
+                          backgroundImage:
+                              AssetImage('assets/images/avatar.png'),
+                        ),
+                        SizedBox(
+                          width: 5,
+                        ),
+                        CustomText(
+                            message: 'Admin',
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textName)
+                      ],
+                    ),
+                  ),
+                )
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget leftHeader() {
+    return Container(
+      width: 250,
+      height: MediaQuery.of(context).size.height,
+      decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+              topRight: Radius.circular(5), bottomRight: Radius.circular(5))),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 10, right: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(
+              height: 10,
+            ),
+            const CustomText(
+                message: 'Main',
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: AppColors.secondaryText),
+            itemHeader('Manage', const Icon(Icons.home_outlined), checkHome),
+            const CustomText(
+                message: 'Analyze',
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: AppColors.secondaryText),
+            itemHeader('Chart', const Icon(Icons.bar_chart_sharp), checkChart),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget itemHeader(String title, Icon icon, bool check) {
+    return InkWell(
+      onTap: () {
+        setState(() {
+          checkHome = false;
+          checkChart = false;
+          if (title == 'Manage') {
+            checkHome = true;
+          } else if (title == 'Chart') {
+            checkChart = true;
+          }
+        });
+      },
+      child: Container(
+        height: 40,
+        width: 220,
+        decoration: BoxDecoration(
+            color: check
+                ? const Color.fromARGB(62, 226, 240, 253)
+                : Colors.transparent,
+            border: Border.all(color: Colors.transparent, width: 1),
+            borderRadius: const BorderRadius.all(Radius.circular(10))),
+        child: Padding(
+          padding: const EdgeInsets.only(left: 10),
+          child: Row(
+            children: [
+              icon,
+              const SizedBox(
+                width: 5,
+              ),
+              CustomText(
+                  message: title,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textName)
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget collapsedSideBar() {
+    return Container(
+      width: 80,
+      height: MediaQuery.of(context).size.height,
+      color: Colors.white,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(height: 20),
+          InkWell(
+            onTap: () {
+              setState(() {
+                checkHome = true;
+                checkChart = false;
+              });
+            },
+            child:
+                iconCollapseSideBar(const Icon(Icons.home_outlined), checkHome),
+          ),
+          const SizedBox(height: 20),
+          InkWell(
+            onTap: () {
+              setState(() {
+                checkHome = false;
+                checkChart = true;
+              });
+            },
+            child: iconCollapseSideBar(
+              const Icon(Icons.bar_chart_sharp),
+              checkChart,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Container iconCollapseSideBar(Icon icon, bool check) {
+    return Container(
+        width: 50,
+        height: 30,
+        decoration: BoxDecoration(
+            borderRadius: const BorderRadius.all(Radius.circular(5)),
+            border: Border.all(color: Colors.white),
+            color: check
+                ? AppColors.colorHeader.withOpacity(0.5)
+                : Colors.transparent),
+        child: icon);
+  }
+
+  Widget selectedPage() {
+    if (checkHome) {
+      return containerHome();
+    } else if (checkChart) {
+      // html.window.history.pushState({}, 'Notification', '/Detail/Notification');
+      return Container();
+    } else {
+      return containerHome();
+    }
+  }
+
+  Widget containerHome() {
     return SizedBox(
       width: MediaQuery.of(context).size.width - 250,
       height: MediaQuery.of(context).size.height,
@@ -227,10 +509,20 @@ class _StudentsPageState extends State<CoursePage> {
             const SizedBox(
               height: 10,
             ),
-            const CustomText(
-                message: 'Information Courses',
+            CustomText(
+                message:
+                    '${widget.classModel.course.courseName} - Room: ${widget.classModel.roomNumber} - Shift: ${widget.classModel.shiftNumber}',
                 fontSize: 25,
                 fontWeight: FontWeight.w800,
+                color: AppColors.primaryText),
+            const SizedBox(
+              height: 10,
+            ),
+            CustomText(
+                message:
+                    'Lecturer: ${widget.classModel.teacher.teacherName} - ${widget.classModel.teacher.teacherID}',
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
                 color: AppColors.primaryText),
             const SizedBox(
               height: 20,
@@ -312,12 +604,12 @@ class _StudentsPageState extends State<CoursePage> {
                     width: 20,
                   ),
                   CustomButton(
-                      buttonName: 'Create New Courses',
+                      buttonName: 'Create New Student',
                       backgroundColorButton: const Color(0xff2d71b1),
                       borderColor: Colors.transparent,
                       textColor: Colors.white,
                       function: () {
-                        createNewCourse(context);
+                        createNewStudent(context);
                       },
                       height: 50,
                       width: 150,
@@ -371,7 +663,7 @@ class _StudentsPageState extends State<CoursePage> {
     );
   }
 
-  Table tableAttendance(List<CourseModel> studentAttendance) {
+  Table tableAttendance(List<StudentDetail> studentAttendance) {
     int startIndex = currentPage * studentsPerPage;
     int endIndex =
         min((currentPage + 1) * studentsPerPage, studentAttendance.length);
@@ -381,7 +673,7 @@ class _StudentsPageState extends State<CoursePage> {
         1: FixedColumnWidth(120),
         2: IntrinsicColumnWidth(),
         3: FlexColumnWidth(1),
-        4: FlexColumnWidth(1),
+        4: IntrinsicColumnWidth(),
         5: FlexColumnWidth(1),
         6: FixedColumnWidth(70),
         7: FixedColumnWidth(70),
@@ -409,7 +701,7 @@ class _StudentsPageState extends State<CoursePage> {
                 padding: const EdgeInsets.all(5),
                 child: const Center(
                   child: CustomText(
-                      message: 'CourseID',
+                      message: 'StudentID',
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
@@ -435,7 +727,7 @@ class _StudentsPageState extends State<CoursePage> {
                 color: const Color(0xff1770f0).withOpacity(0.21),
                 child: const Center(
                   child: CustomText(
-                      message: 'Credit',
+                      message: 'Phone Number',
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
@@ -448,7 +740,7 @@ class _StudentsPageState extends State<CoursePage> {
                 color: const Color(0xff1770f0).withOpacity(0.21),
                 child: const Center(
                   child: CustomText(
-                      message: 'Total Weeks',
+                      message: 'Email',
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
@@ -461,7 +753,7 @@ class _StudentsPageState extends State<CoursePage> {
                 color: const Color(0xff1770f0).withOpacity(0.21),
                 child: const Center(
                   child: CustomText(
-                      message: 'Required Weeks',
+                      message: 'Faculty',
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
@@ -500,143 +792,91 @@ class _StudentsPageState extends State<CoursePage> {
         for (int i = startIndex; i < endIndex; i++)
           TableRow(
             children: [
-              InkWell(
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (builder) => DetailCourseScreen(
-                              courseModel: studentAttendance[i])));
-                },
-                child: TableCell(
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
-                    color: Colors.white,
-                    child: Center(
-                      child: CustomText(
-                          message: '${i + 1}',
+              TableCell(
+                child: Container(
+                  padding: const EdgeInsets.all(5),
+                  color: Colors.white,
+                  child: Center(
+                    child: CustomText(
+                        message: '${i + 1}',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black),
+                  ),
+                ),
+              ),
+              TableCell(
+                child: Container(
+                  color: Colors.white,
+                  padding: const EdgeInsets.all(5),
+                  child: Center(
+                    child: CustomText(
+                        message: studentAttendance[i].studentID ?? '',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black),
+                  ),
+                ),
+              ),
+              TableCell(
+                child: Container(
+                  padding: const EdgeInsets.all(5),
+                  color: Colors.white,
+                  child: Center(
+                    child: CustomText(
+                        message: studentAttendance[i].studentName ?? '',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black),
+                  ),
+                ),
+              ),
+              TableCell(
+                child: Container(
+                  padding: const EdgeInsets.all(5),
+                  color: Colors.white,
+                  child: const Center(
+                    child: CustomText(
+                        message: '',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black),
+                  ),
+                ),
+              ),
+              TableCell(
+                child: Container(
+                  padding: const EdgeInsets.all(5),
+                  color: Colors.white,
+                  child: Center(
+                    child: CustomText(
+                        message: studentAttendance[i].studentEmail ?? '',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black),
+                  ),
+                ),
+              ),
+              TableCell(
+                child: Container(
+                  padding: const EdgeInsets.all(5),
+                  color: Colors.white,
+                  child: const Center(
+                    child: Text('',
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: Colors.black),
-                    ),
+                          color: Colors.black,
+                        )),
                   ),
                 ),
               ),
               InkWell(
                 onTap: () {
-                  Navigator.push(
+                  editStudentDialog(
                       context,
-                      MaterialPageRoute(
-                          builder: (builder) => DetailCourseScreen(
-                                courseModel: studentAttendance[i],
-                              )));
-                },
-                child: TableCell(
-                  child: Container(
-                    color: Colors.white,
-                    padding: const EdgeInsets.all(5),
-                    child: Center(
-                      child: CustomText(
-                          message: studentAttendance[i].courseID,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black),
-                    ),
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (builder) => DetailCourseScreen(
-                              courseModel: studentAttendance[i])));
-                },
-                child: TableCell(
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
-                    color: Colors.white,
-                    child: Center(
-                      child: CustomText(
-                          message: studentAttendance[i].courseName,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black),
-                    ),
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (builder) => DetailCourseScreen(
-                              courseModel: studentAttendance[i])));
-                },
-                child: TableCell(
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
-                    color: Colors.white,
-                    child: Center(
-                      child: CustomText(
-                          message: '${studentAttendance[i].credit}',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black),
-                    ),
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (builder) => DetailCourseScreen(
-                              courseModel: studentAttendance[i])));
-                },
-                child: TableCell(
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
-                    color: Colors.white,
-                    child: Center(
-                      child: CustomText(
-                          message: '${studentAttendance[i].totalWeeks}',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black),
-                    ),
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: () {},
-                child: TableCell(
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
-                    color: Colors.white,
-                    child: Center(
-                      child: Text('${studentAttendance[i].requiredWeeks}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black,
-                          )),
-                    ),
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  editCourse(
-                      context,
-                      studentAttendance[i].courseID,
-                      studentAttendance[i].courseName,
-                      studentAttendance[i].totalWeeks,
-                      studentAttendance[i].requiredWeeks,
-                      studentAttendance[i].credit,
+                      studentAttendance[i].studentID ?? '',
+                      studentAttendance[i].studentName ?? '',
                       i);
                 },
                 child: TableCell(
@@ -659,7 +899,7 @@ class _StudentsPageState extends State<CoursePage> {
               ),
               InkWell(
                 onTap: () {
-                  _deleteCourseDialog(studentAttendance, i);
+                  _deleteStudentDialog(studentAttendance ?? [], i);
                 },
                 child: TableCell(
                   child: Container(
@@ -683,44 +923,218 @@ class _StudentsPageState extends State<CoursePage> {
     );
   }
 
-  Future<dynamic> _deleteCourseDialog(
-      List<CourseModel> studentAttendance, int i) {
+  Future<dynamic> editStudentDialog(BuildContext context, String studentID,
+          String studentName, int index) =>
+      showDialog(
+          context: context,
+          builder: (builder) {
+            studentIDController.text = studentID;
+            studentNameController.text = studentName;
+            return Dialog(
+              child: Container(
+                width: (MediaQuery.of(context).size.width - 250) / 2 - 20,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    border: Border.all(color: Colors.black.withOpacity(0.1))),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 20, right: 20, top: 10),
+                  child: Form(
+                    key: formkey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Center(
+                          child: CustomText(
+                              message: 'Edit Student',
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primaryButton),
+                        ),
+                        const SizedBox(
+                          height: 15,
+                        ),
+                        const CustomText(
+                            message: 'Student ID',
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            color: AppColors.primaryText),
+                        const SizedBox(height: 5),
+                        customTextField(
+                            true,
+                            studentIDController,
+                            TextInputType.phone,
+                            const IconButton(
+                                onPressed: null,
+                                icon: Icon(Icons.card_membership_outlined,
+                                    color: Colors.blue)),
+                            'Ex: 520H0696',
+                            true),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        const CustomText(
+                            message: 'Student Name',
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            color: AppColors.primaryText),
+                        const SizedBox(height: 5),
+                        customTextField(
+                          false,
+                          studentNameController,
+                          TextInputType.phone,
+                          const IconButton(
+                              onPressed: null,
+                              icon: Icon(Icons.card_membership_outlined,
+                                  color: Colors.blue)),
+                          'Ex: Nguyen Van A',
+                          true,
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        Center(
+                          child: CustomButton(
+                              buttonName: 'Edit',
+                              backgroundColorButton: AppColors.primaryButton,
+                              borderColor: Colors.white,
+                              textColor: Colors.white,
+                              function: () async {
+                                _editLecturer(studentID,
+                                    studentNameController.text, index);
+                              },
+                              height: 40,
+                              width: 200,
+                              fontSize: 15,
+                              colorShadow: Colors.transparent,
+                              borderRadius: 10),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          });
+
+  Future<void> _editLecturer(
+      String studentID, String studentName, int index) async {
+    try {
+      _progressDialog.show();
+      var response = await API(context).updateStudent(studentID, studentName);
+      if (response != null && response) {
+        await _progressDialog.hide();
+        if (mounted) {
+          await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Edit Student"),
+                content: const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Edit student successfully"),
+                  ],
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text("OK"),
+                    onPressed: () {
+                      setState(() {
+                        listTemp[index].studentID = studentID;
+                        listTemp[index].studentName = studentName;
+                      });
+                      Navigator.of(context).pop();
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      } else {
+        await _progressDialog.hide();
+        if (mounted) {
+          await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Failed"),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Failed edit student "),
+                    const SizedBox(height: 8),
+                    Text(
+                      fileName,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text("OK"),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
+
+        print('failed');
+      }
+    } catch (e) {
+      print('error');
+    }
+  }
+
+  Future<dynamic> _deleteStudentDialog(List<StudentDetail> studentList, int i) {
     return showDialog(
         context: context,
         builder: (builder) => AlertDialog(
               backgroundColor: Colors.white,
               title: const CustomText(
-                  message: 'Are you want to delete course ?',
+                  message: 'Are you want to delete student ?',
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: AppColors.primaryText),
               actions: [
                 TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const CustomText(
-                      message: 'Cancel',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.primaryButton),
-                ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: CustomText(
+                        message: 'Cancel',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.primaryButton)),
                 TextButton(
                   onPressed: () async {
                     _progressDialog.show();
-                    bool? check = await API(context)
-                        .deleteCourse(studentAttendance[i].courseID);
-                    if (check != null && check) {
+                    String? check = await API(context).deleteStudentInsideClass(
+                        widget.classModel.classID,
+                        studentList[i].studentID ?? '');
+                    if (check != null && check.isNotEmpty) {
                       await _progressDialog.hide();
                       if (mounted) {
                         showDialog(
                           context: context,
                           builder: (builder) => AlertDialog(
-                            title: const CustomText(
-                                message: 'Delete cousre successfully',
+                            title: CustomText(
+                                message: check,
                                 fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primaryButton),
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primaryText),
                             actions: [
                               InkWell(
                                 onTap: () {
@@ -746,8 +1160,8 @@ class _StudentsPageState extends State<CoursePage> {
                         showDialog(
                           context: context,
                           builder: (builder) => AlertDialog(
-                            title: const CustomText(
-                                message: 'Delete cousre failed',
+                            title: CustomText(
+                                message: check ?? 'Delete student failed',
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.primaryButton),
@@ -778,7 +1192,7 @@ class _StudentsPageState extends State<CoursePage> {
             ));
   }
 
-  Widget showPage(List<CourseModel> studentAttendance) {
+  Widget showPage(List<StudentDetail> studentAttendance) {
     int startIndex = currentPage * studentsPerPage;
     int endIndex = (currentPage + 1) * studentsPerPage;
     if (endIndex > studentAttendance.length) {
@@ -888,7 +1302,7 @@ class _StudentsPageState extends State<CoursePage> {
 
   Widget customButtonUploadFile(String nameButton) {
     return InkWell(
-      onTap: _uploadFile,
+      // onTap: _uploadFile,
       mouseCursor: SystemMouseCursors.click,
       child: Container(
         width: 80,
@@ -913,38 +1327,33 @@ class _StudentsPageState extends State<CoursePage> {
     );
   }
 
-  Future<dynamic> createNewCourse(BuildContext context) {
-    courseIDController.text = '';
-    courseNameController.text = '';
-    totalWeeks.text = '';
-    requiredWeeks.text = '';
-    credit.text = '';
+  Future<dynamic> createNewStudent(BuildContext context) {
+    studentIDController.text = '';
     return showDialog(
-        barrierDismissible: false,
         context: context,
         builder: (builder) => Dialog(
               backgroundColor: Colors.white,
               child: Container(
                 width: (MediaQuery.of(context).size.width - 250) / 2 - 20,
-                // height: 600,
+                // height: 400,
                 decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                    border: Border.all(color: Colors.black.withOpacity(0.1))),
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.all(Radius.circular(10)),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.only(left: 20, right: 20, top: 10),
                   child: Form(
-                    key: _formKey,
+                    key: formkey,
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(
                           height: 30,
                         ),
                         const Center(
                           child: CustomText(
-                              message: 'Create New Course',
+                              message: 'Create New Student',
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                               color: AppColors.primaryButton),
@@ -953,102 +1362,21 @@ class _StudentsPageState extends State<CoursePage> {
                           height: 15,
                         ),
                         const CustomText(
-                            message: 'Course ID',
+                            message: 'Student ID',
                             fontSize: 12,
                             fontWeight: FontWeight.normal,
                             color: AppColors.primaryText),
                         const SizedBox(height: 5),
                         customTextField(
-                          false,
-                          courseIDController,
-                          TextInputType.phone,
-                          IconButton(
-                              onPressed: () {},
-                              icon: const Icon(Icons.card_membership_outlined,
-                                  color: Colors.blue)),
-                          'Ex: 520H0696',
-                          true,
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        const CustomText(
-                            message: 'Course Name',
-                            fontSize: 12,
-                            fontWeight: FontWeight.normal,
-                            color: AppColors.primaryText),
-                        const SizedBox(height: 5),
-                        customTextField(
-                          false,
-                          courseNameController,
-                          TextInputType.phone,
-                          IconButton(
-                              onPressed: () {},
-                              icon: const Icon(Icons.card_membership_outlined,
-                                  color: Colors.blue)),
-                          'Ex: Nguyen Van A',
-                          true,
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        const CustomText(
-                            message: 'Total Weeks',
-                            fontSize: 12,
-                            fontWeight: FontWeight.normal,
-                            color: AppColors.primaryText),
-                        const SizedBox(height: 5),
-                        customTextField(
-                          false,
-                          totalWeeks,
-                          TextInputType.phone,
-                          IconButton(
-                              onPressed: () {},
-                              icon: const Icon(Icons.email_outlined,
-                                  color: Color.fromARGB(255, 230, 107, 98))),
-                          'Ex: 10',
-                          true,
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        const CustomText(
-                            message: 'Required Weeks',
-                            fontSize: 12,
-                            fontWeight: FontWeight.normal,
-                            color: AppColors.primaryText),
-                        const SizedBox(height: 5),
-                        customTextField(
-                          false,
-                          requiredWeeks,
-                          TextInputType.phone,
-                          IconButton(
-                              onPressed: () {},
-                              icon: const Icon(Icons.email_outlined,
-                                  color: Color.fromARGB(255, 230, 107, 98))),
-                          'Ex: 10',
-                          true,
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        const CustomText(
-                            message: 'Credit',
-                            fontSize: 12,
-                            fontWeight: FontWeight.normal,
-                            color: AppColors.primaryText),
-                        const SizedBox(height: 5),
-                        customTextField(
-                          false,
-                          credit,
-                          TextInputType.phone,
-                          IconButton(
-                              onPressed: () {},
-                              icon: const Icon(Icons.email_outlined,
-                                  color: Color.fromARGB(255, 230, 107, 98))),
-                          'Ex: 10',
-                          true,
-                        ),
+                            false,
+                            studentIDController,
+                            TextInputType.phone,
+                            IconButton(
+                                onPressed: null,
+                                icon: const Icon(Icons.card_membership_outlined,
+                                    color: Colors.blue)),
+                            'Ex: 520H0696',
+                            true),
                         const SizedBox(
                           height: 20,
                         ),
@@ -1062,11 +1390,7 @@ class _StudentsPageState extends State<CoursePage> {
                                 textColor: AppColors.primaryText,
                                 function: () {
                                   setState(() {
-                                    courseIDController.text = '';
-                                    courseNameController.text = '';
-                                    totalWeeks.text = '';
-                                    requiredWeeks.text = '';
-                                    credit.text = '';
+                                    studentIDController.text = '';
                                   });
                                   Navigator.pop(context);
                                 },
@@ -1084,14 +1408,11 @@ class _StudentsPageState extends State<CoursePage> {
                                 borderColor: Colors.white,
                                 textColor: Colors.white,
                                 function: () {
-                                  if (_formKey.currentState!.validate()) {
-                                    _submitCourse(
-                                        courseIDController.text,
-                                        courseNameController.text,
-                                        int.parse(totalWeeks.text.toString()),
-                                        int.parse(
-                                            requiredWeeks.text.toString()),
-                                        int.parse(credit.text.toString()));
+                                  if (formkey.currentState!.validate()) {
+                                    _submitStudent(
+                                      studentIDController.text,
+                                      widget.classModel.classID,
+                                    );
                                   }
                                 },
                                 height: 40,
@@ -1111,176 +1432,6 @@ class _StudentsPageState extends State<CoursePage> {
               ),
             ));
   }
-
-  Future<dynamic> editCourse(BuildContext context, String courseID,
-          String courseName, int total, int required, int cre, int index) =>
-      showDialog(
-          context: context,
-          builder: (builder) {
-            courseIDController.text = courseID;
-            courseNameController.text = courseName;
-            totalWeeks.text = total.toString();
-            requiredWeeks.text = required.toString();
-            credit.text = cre.toString();
-
-            return Dialog(
-              child: Container(
-                width: (MediaQuery.of(context).size.width - 250) / 2 - 20,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                    border: Border.all(color: Colors.black.withOpacity(0.1))),
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 20, right: 20, top: 10),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(
-                          height: 30,
-                        ),
-                        const Center(
-                          child: CustomText(
-                              message: 'Edit Course',
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primaryButton),
-                        ),
-                        const SizedBox(
-                          height: 15,
-                        ),
-                        const CustomText(
-                            message: 'Course ID',
-                            fontSize: 12,
-                            fontWeight: FontWeight.normal,
-                            color: AppColors.primaryText),
-                        const SizedBox(height: 5),
-                        customTextField(
-                          true,
-                          courseIDController,
-                          TextInputType.phone,
-                          const IconButton(
-                              onPressed: null,
-                              icon: Icon(Icons.card_membership_outlined,
-                                  color: Colors.blue)),
-                          'Ex: 520H0696',
-                          true,
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        const CustomText(
-                            message: 'Course Name',
-                            fontSize: 12,
-                            fontWeight: FontWeight.normal,
-                            color: AppColors.primaryText),
-                        const SizedBox(height: 5),
-                        customTextField(
-                          false,
-                          courseNameController,
-                          TextInputType.phone,
-                          const IconButton(
-                              onPressed: null,
-                              icon: Icon(Icons.card_membership_outlined,
-                                  color: Colors.blue)),
-                          'Ex: Nguyen Van A',
-                          true,
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        const CustomText(
-                            message: 'Total Weeks',
-                            fontSize: 12,
-                            fontWeight: FontWeight.normal,
-                            color: AppColors.primaryText),
-                        const SizedBox(height: 5),
-                        customTextField(
-                          false,
-                          totalWeeks,
-                          TextInputType.phone,
-                          const IconButton(
-                              onPressed: null,
-                              icon: Icon(Icons.email_outlined,
-                                  color: Color.fromARGB(255, 230, 107, 98))),
-                          'Ex: 10',
-                          true,
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        const CustomText(
-                            message: 'Required Weeks',
-                            fontSize: 12,
-                            fontWeight: FontWeight.normal,
-                            color: AppColors.primaryText),
-                        const SizedBox(height: 5),
-                        customTextField(
-                          false,
-                          requiredWeeks,
-                          TextInputType.phone,
-                          const IconButton(
-                              onPressed: null,
-                              icon: Icon(Icons.email_outlined,
-                                  color: Color.fromARGB(255, 230, 107, 98))),
-                          'Ex: 10',
-                          true,
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        const CustomText(
-                            message: 'Credit',
-                            fontSize: 12,
-                            fontWeight: FontWeight.normal,
-                            color: AppColors.primaryText),
-                        const SizedBox(height: 5),
-                        customTextField(
-                          false,
-                          credit,
-                          TextInputType.phone,
-                          IconButton(
-                              onPressed: () {},
-                              icon: const Icon(Icons.email_outlined,
-                                  color: Color.fromARGB(255, 230, 107, 98))),
-                          'Ex: 10',
-                          true,
-                        ),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        Center(
-                          child: CustomButton(
-                              buttonName: 'Edit',
-                              backgroundColorButton: AppColors.primaryButton,
-                              borderColor: Colors.white,
-                              textColor: Colors.white,
-                              function: () async {
-                                _editCourse(
-                                    courseID,
-                                    courseNameController.text,
-                                    int.parse(totalWeeks.text.toString()),
-                                    int.parse(requiredWeeks.text.toString()),
-                                    int.parse(credit.text.toString()),
-                                    index);
-                              },
-                              height: 40,
-                              width: 200,
-                              fontSize: 15,
-                              colorShadow: Colors.transparent,
-                              borderRadius: 10),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          });
 
   Widget customTextField(
       bool readOnly,
@@ -1334,12 +1485,14 @@ class _StudentsPageState extends State<CoursePage> {
     );
   }
 
-  Future<void> _submitCourse(String courseID, String courseName, int totalWeeks,
-      int requiredWeeks, int credit) async {
+  Future<void> _submitStudent(
+    String studentID,
+    String classID,
+  ) async {
     try {
       _progressDialog.show();
-      var response = await API(context).createNewCourse(
-          courseID, courseName, totalWeeks, requiredWeeks, credit);
+      var response =
+          await API(context).createNewStudentInsideClass(studentID, classID);
       if (response != null) {
         await _progressDialog.hide();
         if (mounted) {
@@ -1347,12 +1500,12 @@ class _StudentsPageState extends State<CoursePage> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: const Text("Create Course"),
-                content: const Column(
+                title: const Text("Create Student"),
+                content: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Create course successfully"),
+                    Text('${response}'),
                   ],
                 ),
                 actions: <Widget>[
@@ -1360,9 +1513,8 @@ class _StudentsPageState extends State<CoursePage> {
                     child: const Text("OK"),
                     onPressed: () {
                       setState(() {
-                        listTemp.add(response);
+                        // listTemp.add(StudentDetail(studentID: ));
                       });
-                      Navigator.of(context).pop();
                       Navigator.of(context).pop();
                     },
                   ),
@@ -1385,87 +1537,7 @@ class _StudentsPageState extends State<CoursePage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Failed create course "),
-                    const SizedBox(height: 8),
-                    Text(
-                      fileName,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                actions: <Widget>[
-                  TextButton(
-                    child: const Text("OK"),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
-          );
-        }
-
-        print('failed');
-      }
-    } catch (e) {
-      print('error');
-    }
-  }
-
-  Future<void> _editCourse(String courseID, String courseName, int totalWeeks,
-      int requiredWeeks, int credit, int index) async {
-    try {
-      _progressDialog.show();
-      var response = await API(context).updateCourse(
-          courseID, courseName, totalWeeks, requiredWeeks, credit);
-      if (response != null && response) {
-        await _progressDialog.hide();
-        if (mounted) {
-          await showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text("Edit Course"),
-                content: const Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Edit course successfully"),
-                  ],
-                ),
-                actions: <Widget>[
-                  TextButton(
-                    child: const Text("OK"),
-                    onPressed: () {
-                      setState(() {
-                        listTemp[index].courseName = courseName;
-                        listTemp[index].totalWeeks = totalWeeks;
-                        listTemp[index].requiredWeeks = requiredWeeks;
-                        listTemp[index].credit = credit;
-                      });
-                      Navigator.pop(context);
-                      Navigator.pop(context);
-                    },
-                  ),
-                ],
-              );
-            },
-          );
-        }
-      } else {
-        await _progressDialog.hide();
-        if (mounted) {
-          await showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text("Failed"),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text("Failed edit course "),
+                    const Text("Failed create student"),
                     const SizedBox(height: 8),
                     Text(
                       fileName,

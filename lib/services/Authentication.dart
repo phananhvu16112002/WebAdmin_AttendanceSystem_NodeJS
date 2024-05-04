@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:admin_attendancesystem_nodejs/services/SecureStorage.dart';
+import 'package:admin_attendancesystem_nodejs/utils/constants.dart';
 import 'package:http/http.dart' as http;
 
 class Authentication{
+  String baseURl = Constants.baseUrl;
   Future<String> login(String email, String password) async {
-    const URL = 'http://localhost:8080/api/admin/login';
+    var URL = 'http://$baseURl:8080/api/admin/login';
     var request = {'email': email, 'password': password};
     var body = json.encode(request);
     var headers = {

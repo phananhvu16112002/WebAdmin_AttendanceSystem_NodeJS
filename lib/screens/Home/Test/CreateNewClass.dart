@@ -4,15 +4,19 @@ import 'package:admin_attendancesystem_nodejs/common/base/CustomButton.dart';
 import 'package:admin_attendancesystem_nodejs/common/base/CustomText.dart';
 
 import 'package:admin_attendancesystem_nodejs/common/colors/color.dart';
+import 'package:admin_attendancesystem_nodejs/models/CoursePage/CourseModel.dart';
+import 'package:admin_attendancesystem_nodejs/providers/selected_detail_provider.dart';
 import 'package:admin_attendancesystem_nodejs/services/API.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import 'package:intl/intl.dart';
 import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
+import 'package:provider/provider.dart';
 
 class CreateNewClass extends StatefulWidget {
-  const CreateNewClass({super.key});
+  const CreateNewClass({super.key, required this.courseModel});
+  final CourseModel courseModel;
 
   @override
   State<CreateNewClass> createState() => _CreateAttendanceFormPageState();
@@ -35,6 +39,12 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
   final formkey = GlobalKey<FormState>();
 
   String dropdownMenu = 'None';
+
+  var items = [
+    'Theory',
+    'Laboratory',
+  ];
+  String dropdownvalue = 'Theory';
   List<String> faculties = [
     'None',
     'Information Technology',
@@ -45,10 +55,96 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
     'Marketing'
   ];
   int selectedIndex = 0;
+  TimeOfDay? timeStart;
+  TimeOfDay? timeEnd;
+  bool isStartTimeSelected = false;
+  bool isEndTimeSelected = false;
+
+  Future<void> selectTimeStart(BuildContext context) async {
+    final TimeOfDay? time = await showTimePicker(
+        initialEntryMode: TimePickerEntryMode.input,
+        barrierColor: Colors.black.withOpacity(0.2),
+        helpText: 'Select Start Time For Attendance',
+        builder: (context, child) {
+          return Theme(
+            data: ThemeData.light(useMaterial3: false)
+                .copyWith(primaryColor: Colors.white),
+            child: child!,
+          );
+        },
+        context: context,
+        initialTime: timeStart ?? TimeOfDay.now());
+    if (time != null && time != timeStart) {
+      setState(() {
+        timeStart = time;
+        isStartTimeSelected = true;
+        startTimeController.text =
+            formatTime(formatTimeOfDate(timeStart!).toString());
+        print('TimeStart: ${formatTimeOfDate(timeStart!)}');
+        checkDuplicateTime();
+      });
+    }
+  }
+
+  Future<void> selectTimeEnd(BuildContext context) async {
+    final TimeOfDay? time = await showTimePicker(
+        initialEntryMode: TimePickerEntryMode.input,
+        barrierColor: Colors.black.withOpacity(0.2),
+        helpText: 'Select Start Time For Attendance',
+        builder: (context, child) {
+          return Theme(
+            data: ThemeData.light(useMaterial3: false)
+                .copyWith(primaryColor: Colors.white),
+            child: child!,
+          );
+        },
+        context: context,
+        initialTime: timeEnd ?? TimeOfDay.now());
+    if (time != null && time != timeEnd) {
+      setState(() {
+        timeEnd = time;
+        isEndTimeSelected = true;
+        endTimeController.text =
+            formatTime(formatTimeOfDate(timeEnd!).toString());
+        print('TimeEnd: ${formatTimeOfDate(timeEnd!)}');
+        checkDuplicateTime();
+      });
+    }
+  }
+
+  bool checkDuplicateTime() {
+    if (isStartTimeSelected && isEndTimeSelected) {
+      if (timeStart!.hour > timeEnd!.hour ||
+          (timeStart!.hour == timeEnd!.hour &&
+              timeStart!.minute >= timeEnd!.minute)) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              title: const Text('Error'),
+              content: const Text('Start Time must be before End Time.'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+      return true;
+    }
+    return false;
+  }
 
   @override
   void initState() {
     super.initState();
+    courseIDController.text = widget.courseModel.courseID;
     _progressDialog = ProgressDialog(context,
         customBody: Container(
           width: 200,
@@ -101,7 +197,8 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
       String endTime,
       String classType,
       String group,
-      String subGroup) async {
+      String subGroup,
+      SelectedPageProvider selectedPageProvider) async {
     if (_excelBytes == null) {
       // Fluttertoast.showToast(msg: 'Please select a file to upload');
       print('null');
@@ -144,9 +241,13 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
                   TextButton(
                     child: const Text("OK"),
                     onPressed: () {
-                      setState(() {
-                        fileName = '';
-                      });
+                      // setState(() {
+                      //   fileName = '';
+                      // });
+                      selectedPageProvider.setCheckHome(true);
+                      selectedPageProvider.setCheckChart(false);
+                      selectedPageProvider.setCheckCreateClass(false);
+                      // Navigator.of(context).pop();
                       Navigator.of(context).pop();
                     },
                   ),
@@ -199,6 +300,7 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedPageProvider = Provider.of<SelectedPageProvider>(context);
     return Container(
       width: MediaQuery.of(context).size.width - 250,
       height: MediaQuery.of(context).size.height,
@@ -208,17 +310,17 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [infoForm(context)],
+            children: [infoForm(context, selectedPageProvider)],
           )),
     );
   }
 
   Widget infoForm(
-    BuildContext context,
-  ) {
+      BuildContext context, SelectedPageProvider selectedPageProvider) {
     return Container(
       width: (MediaQuery.of(context).size.width - 250) / 2 - 20,
-      height: 600,
+      // height: 600,
+      padding: EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: const BorderRadius.all(Radius.circular(10)),
@@ -231,9 +333,6 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(
-                  height: 30,
-                ),
                 const Center(
                   child: CustomText(
                       message: 'Create New Class',
@@ -252,7 +351,7 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
                           borderColor: const Color.fromARGB(255, 205, 203, 203),
                           textColor: AppColors.primaryButton,
                           function: _selectFile,
-                          height: 20,
+                          height: 30,
                           width: 100,
                           fontSize: 12,
                           colorShadow: Colors.transparent,
@@ -310,9 +409,9 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
                         color: AppColors.primaryText),
                     const SizedBox(height: 5),
                     customTextField(
-                        450,
+                        double.infinity,
                         40,
-                        false,
+                        true,
                         courseIDController,
                         TextInputType.text,
                         IconButton(
@@ -320,7 +419,12 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
                             icon: Icon(Icons.person_2_outlined,
                                 color: Colors.black.withOpacity(0.5))),
                         'Ex: 5200033',
-                        true)
+                        true, (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'This field is not empty';
+                      }
+                      return null;
+                    })
                   ],
                 ),
                 const SizedBox(
@@ -333,7 +437,7 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
                     color: AppColors.primaryText),
                 const SizedBox(height: 5),
                 customTextField(
-                    450,
+                    double.infinity,
                     40,
                     false,
                     lecturerIDController,
@@ -343,58 +447,80 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
                         icon: Icon(Icons.card_membership_outlined,
                             color: Colors.black.withOpacity(0.5))),
                     'Ex: 520H0696',
-                    true),
+                    true, (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'This field is not empty';
+                  }
+                  return null;
+                }),
                 const SizedBox(
                   height: 10,
                 ),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const CustomText(
-                            message: 'Room',
-                            fontSize: 12,
-                            fontWeight: FontWeight.normal,
-                            color: AppColors.primaryText),
-                        const SizedBox(height: 5),
-                        customTextField(
-                            200,
-                            40,
-                            false,
-                            roomController,
-                            TextInputType.text,
-                            IconButton(
-                                onPressed: null,
-                                icon: Icon(Icons.room_outlined,
-                                    color: Colors.black.withOpacity(0.5))),
-                            'Ex:A0505',
-                            true)
-                      ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const CustomText(
+                              message: 'Room',
+                              fontSize: 12,
+                              fontWeight: FontWeight.normal,
+                              color: AppColors.primaryText),
+                          const SizedBox(height: 5),
+                          customTextField(
+                              null,
+                              40,
+                              false,
+                              roomController,
+                              TextInputType.text,
+                              IconButton(
+                                  onPressed: null,
+                                  icon: Icon(Icons.room_outlined,
+                                      color: Colors.black.withOpacity(0.5))),
+                              'Ex:A0505',
+                              true, (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'This field is not empty';
+                            }
+                            return null;
+                          })
+                        ],
+                      ),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const CustomText(
-                            message: 'Shift',
-                            fontSize: 12,
-                            fontWeight: FontWeight.normal,
-                            color: AppColors.primaryText),
-                        const SizedBox(height: 5),
-                        customTextField(
-                            200,
-                            40,
-                            false,
-                            shiftController,
-                            TextInputType.text,
-                            IconButton(
-                                onPressed: null,
-                                icon: Icon(Icons.filter_tilt_shift_outlined,
-                                    color: Colors.black.withOpacity(0.5))),
-                            'Ex: 3',
-                            true)
-                      ],
+                    SizedBox(
+                      width: 50,
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const CustomText(
+                              message: 'Shift',
+                              fontSize: 12,
+                              fontWeight: FontWeight.normal,
+                              color: AppColors.primaryText),
+                          const SizedBox(height: 5),
+                          customTextField(
+                              null,
+                              40,
+                              false,
+                              shiftController,
+                              TextInputType.text,
+                              IconButton(
+                                  onPressed: null,
+                                  icon: Icon(Icons.filter_tilt_shift_outlined,
+                                      color: Colors.black.withOpacity(0.5))),
+                              'Ex: 3',
+                              true, (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'This field is not empty';
+                            }
+                            return null;
+                          })
+                        ],
+                      ),
                     )
                   ],
                 ),
@@ -402,53 +528,70 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
                   height: 10,
                 ),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const CustomText(
-                            message: 'StartTime',
-                            fontSize: 12,
-                            fontWeight: FontWeight.normal,
-                            color: AppColors.primaryText),
-                        const SizedBox(height: 5),
-                        customTextField(
-                            200,
-                            40,
-                            false,
-                            startTimeController,
-                            TextInputType.text,
-                            IconButton(
-                                onPressed: null,
-                                icon: Icon(Icons.lock_clock_outlined,
-                                    color: Colors.black.withOpacity(0.5))),
-                            'Ex:11:11:00',
-                            true)
-                      ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const CustomText(
+                              message: 'StartTime',
+                              fontSize: 12,
+                              fontWeight: FontWeight.normal,
+                              color: AppColors.primaryText),
+                          const SizedBox(height: 5),
+                          customTextField(
+                              null,
+                              40,
+                              true,
+                              startTimeController,
+                              TextInputType.text,
+                              IconButton(
+                                  onPressed: () => selectTimeStart(context),
+                                  icon: Icon(Icons.watch_later_outlined,
+                                      color: Colors.black.withOpacity(0.5))),
+                              'Ex:11:11:00',
+                              true, (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'This field is not empty';
+                            }
+                            return null;
+                          })
+                        ],
+                      ),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const CustomText(
-                            message: 'EndTime',
-                            fontSize: 12,
-                            fontWeight: FontWeight.normal,
-                            color: AppColors.primaryText),
-                        const SizedBox(height: 5),
-                        customTextField(
-                            200,
-                            40,
-                            false,
-                            endTimeController,
-                            TextInputType.text,
-                            IconButton(
-                                onPressed: null,
-                                icon: Icon(Icons.lock_clock_outlined,
-                                    color: Colors.black.withOpacity(0.5))),
-                            'Ex: 15:15:00',
-                            true)
-                      ],
+                    SizedBox(
+                      width: 50,
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const CustomText(
+                              message: 'EndTime',
+                              fontSize: 12,
+                              fontWeight: FontWeight.normal,
+                              color: AppColors.primaryText),
+                          const SizedBox(height: 5),
+                          customTextField(
+                              null,
+                              40,
+                              true,
+                              endTimeController,
+                              TextInputType.text,
+                              IconButton(
+                                  onPressed: () => selectTimeEnd(context),
+                                  icon: Icon(Icons.lock_clock_outlined,
+                                      color: Colors.black.withOpacity(0.5))),
+                              'Ex: 15:15:00',
+                              true, (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'This field is not empty';
+                            }
+                            return null;
+                          })
+                        ],
+                      ),
                     )
                   ],
                 ),
@@ -456,53 +599,70 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
                   height: 10,
                 ),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const CustomText(
-                            message: 'Group',
-                            fontSize: 12,
-                            fontWeight: FontWeight.normal,
-                            color: AppColors.primaryText),
-                        const SizedBox(height: 5),
-                        customTextField(
-                            200,
-                            40,
-                            false,
-                            groupController,
-                            TextInputType.text,
-                            IconButton(
-                                onPressed: null,
-                                icon: Icon(Icons.group_work_outlined,
-                                    color: Colors.black.withOpacity(0.5))),
-                            'Ex:10',
-                            true)
-                      ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const CustomText(
+                              message: 'Group',
+                              fontSize: 12,
+                              fontWeight: FontWeight.normal,
+                              color: AppColors.primaryText),
+                          const SizedBox(height: 5),
+                          customTextField(
+                              null,
+                              40,
+                              false,
+                              groupController,
+                              TextInputType.text,
+                              IconButton(
+                                  onPressed: null,
+                                  icon: Icon(Icons.group_work_outlined,
+                                      color: Colors.black.withOpacity(0.5))),
+                              'Ex:10',
+                              true, (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'This field is not empty';
+                            }
+                            return null;
+                          })
+                        ],
+                      ),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const CustomText(
-                            message: 'subGroup',
-                            fontSize: 12,
-                            fontWeight: FontWeight.normal,
-                            color: AppColors.primaryText),
-                        const SizedBox(height: 5),
-                        customTextField(
-                            200,
-                            40,
-                            false,
-                            subGroupController,
-                            TextInputType.text,
-                            IconButton(
-                                onPressed: null,
-                                icon: Icon(Icons.group_work_outlined,
-                                    color: Colors.black.withOpacity(0.5))),
-                            'Ex: 3',
-                            true)
-                      ],
+                    SizedBox(
+                      width: 50,
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const CustomText(
+                              message: 'subGroup',
+                              fontSize: 12,
+                              fontWeight: FontWeight.normal,
+                              color: AppColors.primaryText),
+                          const SizedBox(height: 5),
+                          customTextField(
+                              null,
+                              40,
+                              false,
+                              subGroupController,
+                              TextInputType.text,
+                              IconButton(
+                                  onPressed: null,
+                                  icon: Icon(Icons.group_work_outlined,
+                                      color: Colors.black.withOpacity(0.5))),
+                              'Ex: 3',
+                              true, (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'This field is not empty';
+                            }
+                            return null;
+                          })
+                        ],
+                      ),
                     )
                   ],
                 ),
@@ -517,18 +677,58 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
                 const SizedBox(
                   height: 5,
                 ),
-                customTextField(
-                    450,
-                    40,
-                    false,
-                    typeController,
-                    TextInputType.text,
-                    IconButton(
-                        onPressed: null,
-                        icon: Icon(Icons.group_work_outlined,
-                            color: Colors.black.withOpacity(0.5))),
-                    'Ex: thesis',
-                    true),
+                Container(
+                  width: double.infinity,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(
+                      width: 1,
+                      color: AppColors.primaryText.withOpacity(0.2),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: DropdownButton(
+                            underline: Container(),
+                            value: dropdownvalue,
+                            icon: const Icon(null), // Loại bỏ icon ở đây
+                            items: items.map((String items) {
+                              return DropdownMenuItem(
+                                value: items,
+                                child: SizedBox(
+                                  // width: 450,
+                                  child: Text(
+                                    items,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.primaryText
+                                          .withOpacity(0.5),
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                selectedIndex = items.indexOf(newValue!);
+                                dropdownvalue = newValue;
+                                typeController.text = newValue;
+                              });
+                              print("Selected index: $selectedIndex");
+                            },
+                          ),
+                        ),
+                        const Icon(Icons.keyboard_arrow_down_outlined),
+                      ],
+                    ),
+                  ),
+                ),
                 const SizedBox(
                   height: 10,
                 ),
@@ -539,17 +739,50 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
                       borderColor: Colors.white,
                       textColor: Colors.white,
                       function: () {
-                        if (formkey.currentState!.validate()) {
+                        bool check = checkDuplicateTime();
+                        if (formkey.currentState!.validate() &&
+                            check &&
+                            _excelBytes != null) {
                           _uploadFile(
                               courseIDController.text,
                               lecturerIDController.text,
                               roomController.text,
                               shiftController.text,
-                              startTimeController.text,
-                              endTimeController.text,
+                              formatTimeOfDate(timeStart!).toString(),
+                              formatTimeOfDate(timeEnd!).toString(),
                               typeController.text,
                               groupController.text,
-                              subGroupController.text);
+                              subGroupController.text,
+                              selectedPageProvider);
+                        } else {
+                          if (courseIDController.text.isEmpty) {
+                            _customDialog(context, 'Field Course',
+                                "CourseID is required");
+                          } else if (lecturerIDController.text.isEmpty) {
+                            _customDialog(context, 'Field Lecturer',
+                                "LecturerID is required");
+                          } else if (roomController.text.isEmpty) {
+                            _customDialog(
+                                context, 'Field Room', "Room is required");
+                          } else if (_excelBytes == null) {
+                            _customDialog(context, 'Field excel students',
+                                "Excel students is required");
+                          } else if (shiftController.text.isEmpty) {
+                            _customDialog(
+                                context, 'Field shift', "Shift is required");
+                          } else if (startTimeController.text.isEmpty) {
+                            _customDialog(context, 'Field StartTime',
+                                "StartTime is required");
+                          } else if (endTimeController.text.isEmpty) {
+                            _customDialog(context, 'Field EndTime',
+                                "EndTime is required");
+                          } else if (groupController.text.isEmpty) {
+                            _customDialog(
+                                context, 'Field Group', "Group is required");
+                          } else if (subGroupController.text.isEmpty) {
+                            _customDialog(context, 'Field SubGroup',
+                                "SubGroup is required");
+                          }
                         }
                       },
                       height: 50,
@@ -566,25 +799,42 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
     );
   }
 
+  Future<dynamic> _customDialog(
+      BuildContext context, String title, String content) {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(content),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget customTextField(
-      double width,
+      double? width,
       double height,
       bool readOnly,
       TextEditingController controller,
       TextInputType textInputType,
       IconButton iconSuffix,
       String hintText,
-      bool enabled) {
+      bool enabled,
+      String? Function(String?)? validator) {
     return Container(
       width: width,
-      height: height,
+      // height: height,
       decoration: BoxDecoration(
           color: Colors.white,
-          border: Border(
-              top: BorderSide(color: Colors.black.withOpacity(0.2)),
-              left: BorderSide(color: Colors.black.withOpacity(0.2)),
-              right: BorderSide(color: Colors.black.withOpacity(0.2)),
-              bottom: BorderSide(color: Colors.black.withOpacity(0.2))),
           borderRadius: const BorderRadius.all(Radius.circular(5))),
       child: TextFormField(
         enabled: enabled,
@@ -602,13 +852,20 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
             hintText: hintText,
             hintStyle:
                 TextStyle(fontSize: 12, color: Colors.black.withOpacity(0.5)),
-            enabledBorder: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(5)),
-                borderSide: BorderSide(width: 1, color: Colors.transparent)),
-            focusedBorder: const OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(5)),
-              borderSide: BorderSide(width: 1, color: AppColors.primaryButton),
-            )),
+            border: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(5)),
+                borderSide:
+                    BorderSide(width: 1, color: Colors.black.withOpacity(0.2))),
+            enabledBorder: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(5)),
+                borderSide:
+                    BorderSide(width: 1, color: Colors.black.withOpacity(0.2))),
+            // errorBorder: ,
+            focusedBorder: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(5)),
+                borderSide: BorderSide(
+                    width: 1, color: Colors.black.withOpacity(0.5)))),
+        validator: validator,
       ),
     );
   }

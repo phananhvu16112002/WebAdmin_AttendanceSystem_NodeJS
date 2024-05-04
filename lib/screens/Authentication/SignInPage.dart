@@ -185,7 +185,7 @@ class _SignInPageState extends State<SignInPage> {
                                         fontWeight: FontWeight.w500,
                                         color: AppColors.primaryText),
                                     const SizedBox(
-                                      height: 5,
+                                      height: 10,
                                     ),
                                     customTextFormField(
                                         emailController,
@@ -211,7 +211,7 @@ class _SignInPageState extends State<SignInPage> {
                                         fontWeight: FontWeight.w500,
                                         color: AppColors.primaryText),
                                     const SizedBox(
-                                      height: 5,
+                                      height: 10,
                                     ),
                                     customTextFormField(
                                         passwordController,

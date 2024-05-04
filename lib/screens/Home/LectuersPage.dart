@@ -944,8 +944,8 @@ class _StudentsPageState extends State<LecturerPage> {
                   fontWeight: FontWeight.bold,
                   color: AppColors.primaryText),
               actions: [
-                InkWell(
-                  onTap: () {
+                TextButton(
+                  onPressed: () {
                     Navigator.pop(context);
                   },
                   child: const CustomText(
@@ -954,8 +954,8 @@ class _StudentsPageState extends State<LecturerPage> {
                       fontWeight: FontWeight.w500,
                       color: AppColors.primaryButton),
                 ),
-                InkWell(
-                  onTap: () async {
+                TextButton(
+                  onPressed: () async {
                     _progressDialog.show();
                     bool? check = await API(context)
                         .deleteLecturer(teacherList[i].teacherID);

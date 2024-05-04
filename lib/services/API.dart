@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:admin_attendancesystem_nodejs/models/Class.dart';
 import 'package:admin_attendancesystem_nodejs/models/CoursePage/CourseModel.dart';
+import 'package:admin_attendancesystem_nodejs/models/DetailPage/StudentDetail.dart';
 import 'package:admin_attendancesystem_nodejs/models/HomePage/ClassModel.dart';
 import 'package:admin_attendancesystem_nodejs/models/LecturerPage/Teacher.dart';
 import 'package:admin_attendancesystem_nodejs/models/StudentPage/Student.dart';
@@ -10,10 +11,12 @@ import 'package:admin_attendancesystem_nodejs/models/Teacher.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Authentication/WelcomePage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CoursePage.dart';
 import 'package:admin_attendancesystem_nodejs/services/SecureStorage.dart';
+import 'package:admin_attendancesystem_nodejs/utils/constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
 class API {
+  String baseURl = Constants.baseUrl;
   BuildContext context;
   API(this.context);
 
@@ -25,8 +28,7 @@ class API {
   }
 
   Future<String> refreshAccessToken(String refreshToken) async {
-    const url =
-        'http://localhost:8080/api/token/refreshAccessToken'; // 10.0.2.2
+    var url = 'http://$baseURl:8080/api/token/refreshAccessToken'; // 10.0.2.2
     var headers = {'authorization': refreshToken};
 
     try {
@@ -99,7 +101,7 @@ class API {
   }
 
   Future<List<TeacherPage>?> uploadExcelTeachers(Uint8List excelBytes) async {
-    var uri = Uri.parse('http://localhost:8080/api/admin/submit/teachers');
+    var uri = Uri.parse('http://$baseURl:8080/api/admin/submit/teachers');
     var accessToken = await getAccessToken();
     try {
       var request = http.MultipartRequest("POST", uri);
@@ -182,7 +184,7 @@ class API {
   }
 
   Future<List<Student>?> uploadExcelStudent(Uint8List excelBytes) async {
-    var uri = Uri.parse('http://localhost:8080/api/admin/submit/students');
+    var uri = Uri.parse('http://$baseURl:8080/api/admin/submit/students');
     var accessToken = await getAccessToken();
     try {
       var request = http.MultipartRequest("POST", uri);
@@ -265,7 +267,7 @@ class API {
   }
 
   Future<List<CourseModel>?> uploadExcelCourses(Uint8List excelBytes) async {
-    var uri = Uri.parse('http://localhost:8080/api/admin/submit/courses');
+    var uri = Uri.parse('http://$baseURl:8080/api/admin/submit/courses');
     var accessToken = await getAccessToken();
     try {
       var request = http.MultipartRequest("POST", uri);
@@ -357,7 +359,7 @@ class API {
       String classType,
       String group,
       String subGroup) async {
-    var uri = Uri.parse('http://localhost:8080/api/admin/submit/classes');
+    var uri = Uri.parse('http://$baseURl:8080/api/admin/submit/classes');
 
     try {
       var request = http.MultipartRequest("POST", uri);
@@ -436,7 +438,7 @@ class API {
   }
 
   Future<List<Student>> getStudents() async {
-    const URL = 'http://localhost:8080/api/admin/students'; //10.0.2.2
+    var URL = 'http://$baseURl:8080/api/admin/students'; //10.0.2.2
 
     var accessToken = await getAccessToken();
     var headers = {'authorization': accessToken};
@@ -525,7 +527,7 @@ class API {
   }
 
   Future<List<TeacherPage>> getTeachers() async {
-    const URL = 'http://localhost:8080/api/admin/teachers'; //10.0.2.2
+    var URL = 'http://$baseURl:8080/api/admin/teachers'; //10.0.2.2
 
     var accessToken = await getAccessToken();
     var headers = {'authorization': accessToken};
@@ -614,7 +616,7 @@ class API {
   }
 
   Future<List<CourseModel>> getCourses() async {
-    const URL = 'http://localhost:8080/api/admin/courses'; //10.0.2.2
+    var URL = 'http://$baseURl:8080/api/admin/courses'; //10.0.2.2
 
     var accessToken = await getAccessToken();
     var headers = {'authorization': accessToken};
@@ -702,8 +704,8 @@ class API {
     }
   }
 
-  Future<List<ClassModel>> getClasses() async {
-    const URL = 'http://localhost:8080/api/admin/classes'; //10.0.2.2
+  Future<List<ClassModel>> getClasses(int page) async {
+    var URL = 'http://$baseURl:8080/api/admin/classes/page/$page'; //10.0.2.2
 
     var accessToken = await getAccessToken();
     var headers = {'authorization': accessToken};
@@ -791,7 +793,7 @@ class API {
 
   Future<TeacherPage?> createNewLecturer(
       String lecturerID, String lecturerName, String lecturerEmail) async {
-    const url = 'http://localhost:8080/api/admin/submit/teacher';
+    var url = 'http://$baseURl:8080/api/admin/submit/teacher';
     var accessToken = await getAccessToken();
     var request = {
       'teacherID': lecturerID,
@@ -849,7 +851,7 @@ class API {
     String teacherID,
     String teacherName,
   ) async {
-    final url = 'http://localhost:8080/api/admin/edit/teacher/$teacherID';
+    final url = 'http://$baseURl:8080/api/admin/edit/teacher/$teacherID';
     var accessToken = await getAccessToken();
     var request = {
       'teacherName': teacherName,
@@ -905,7 +907,7 @@ class API {
   Future<bool?> deleteLecturer(
     String teacherID,
   ) async {
-    final url = 'http://localhost:8080/api/admin/teacher/$teacherID';
+    final url = 'http://$baseURl:8080/api/admin/teacher/$teacherID';
     var accessToken = await getAccessToken();
     var headers = {
       'authorization': accessToken,
@@ -951,7 +953,7 @@ class API {
 
   Future<Student?> createNewStudent(
       String studentID, String studentName, String studentEmail) async {
-    const url = 'http://localhost:8080/api/admin/submit/student';
+    var url = 'http://$baseURl:8080/api/admin/submit/student';
     var accessToken = await getAccessToken();
     var request = {
       'studentID': studentID,
@@ -1009,7 +1011,7 @@ class API {
     String studentID,
     String studentName,
   ) async {
-    final url = 'http://localhost:8080/api/admin/edit/student/$studentID';
+    final url = 'http://$baseURl:8080/api/admin/edit/student/$studentID';
     var accessToken = await getAccessToken();
     var request = {
       'studentName': studentName,
@@ -1061,7 +1063,7 @@ class API {
   Future<bool?> deleteStudent(
     String studentID,
   ) async {
-    final url = 'http://localhost:8080/api/admin/student/$studentID';
+    final url = 'http://$baseURl:8080/api/admin/student/$studentID';
     var accessToken = await getAccessToken();
     var headers = {
       'authorization': accessToken,
@@ -1107,7 +1109,7 @@ class API {
 
   Future<CourseModel?> createNewCourse(String courseID, String courseName,
       int totalWeeks, int requiredWeeks, int credit) async {
-    const url = 'http://localhost:8080/api/admin/submit/course';
+    var url = 'http://$baseURl:8080/api/admin/submit/course';
     var accessToken = await getAccessToken();
     var request = {
       'courseID': courseID,
@@ -1165,7 +1167,7 @@ class API {
 
   Future<bool?> updateCourse(String courseID, String courseName, int totalWeeks,
       int requiredWeeks, int credit) async {
-    final url = 'http://localhost:8080/api/admin/edit/course/$courseID';
+    final url = 'http://$baseURl:8080/api/admin/edit/course/$courseID';
     var accessToken = await getAccessToken();
     var request = {
       'courseName': courseName,
@@ -1222,7 +1224,7 @@ class API {
   Future<bool?> deleteCourse(
     String courseID,
   ) async {
-    final url = 'http://localhost:8080/api/admin/course/$courseID';
+    final url = 'http://$baseURl:8080/api/admin/course/$courseID';
     var accessToken = await getAccessToken();
     var headers = {
       'authorization': accessToken,
@@ -1265,4 +1267,367 @@ class API {
       return false;
     }
   }
+
+  Future<List<StudentDetail>> getStudentsInClass(String classID) async {
+    var URL = 'http://$baseURl:8080/api/admin/classes/$classID'; //10.0.2.2
+
+    var accessToken = await getAccessToken();
+    var headers = {'authorization': accessToken};
+    try {
+      final response = await http.get(Uri.parse(URL), headers: headers);
+      if (response.statusCode == 200) {
+        dynamic responseData = jsonDecode(response.body);
+        List<StudentDetail> data = [];
+
+        if (responseData is List) {
+          for (var temp in responseData) {
+            if (temp is Map<String, dynamic>) {
+              try {
+                data.add(StudentDetail.fromJson(temp));
+              } catch (e) {
+                print('Error parsing data: $e');
+              }
+            } else {
+              print('Invalid data type: $temp');
+            }
+          }
+        } else if (responseData is Map<String, dynamic>) {
+          try {
+            data.add(StudentDetail.fromJson(responseData));
+          } catch (e) {
+            print('Error parsing data: $e');
+          }
+        } else {
+          print('Unexpected data type: $responseData');
+        }
+        // print('Data $data');
+        return data;
+      } else if (response.statusCode == 498 || response.statusCode == 401) {
+        var refreshToken = await SecureStorage().readSecureData('refreshToken');
+        var newAccessToken = await refreshAccessToken(refreshToken);
+        if (newAccessToken.isNotEmpty) {
+          headers['authorization'] = newAccessToken;
+          final retryResponse =
+              await http.get(Uri.parse(URL), headers: headers);
+          if (retryResponse.statusCode == 200) {
+            // print('-- RetryResponse.body ${retryResponse.body}');
+            // print('-- Retry JsonDecode:${jsonDecode(retryResponse.body)}');
+            dynamic responseData = jsonDecode(retryResponse.body);
+            List<StudentDetail> data = [];
+
+            if (responseData is List) {
+              for (var temp in responseData) {
+                if (temp is Map<String, dynamic>) {
+                  try {
+                    data.add(StudentDetail.fromJson(temp));
+                  } catch (e) {
+                    print('Error parsing data: $e');
+                  }
+                } else {
+                  print('Invalid data type: $temp');
+                }
+              }
+            } else if (responseData is Map<String, dynamic>) {
+              try {
+                data.add(StudentDetail.fromJson(responseData));
+              } catch (e) {
+                print('Error parsing data: $e');
+              }
+            } else {
+              print('Unexpected data type: $responseData');
+            }
+
+            // print('Data $data');
+            return data;
+          } else {
+            return [];
+          }
+        } else {
+          print('New Access Token is empty');
+          return [];
+        }
+      } else {
+        print(
+            'Failed to load reports data. Status code: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('Error: $e');
+      return [];
+    }
+  }
+
+  Future<String?> createNewStudentInsideClass(
+      String studentID, String classID) async {
+    var url = 'http://$baseURl:8080/api/admin/submit/studentclass';
+    var accessToken = await getAccessToken();
+    var request = {
+      'studentID': studentID,
+      'classID': classID,
+    };
+    var body = json.encode(request);
+    var headers = {
+      'authorization': accessToken,
+      'Content-type': 'application/json; charset=UTF-8',
+      'Accept': 'application/json',
+    };
+    try {
+      print('body:$body');
+      final response =
+          await http.post(Uri.parse(url), headers: headers, body: body);
+      // print(jsonDecode(response.body));
+      if (response.statusCode == 200) {
+        dynamic responseData = jsonDecode(response.body);
+
+        return responseData['message'];
+      } else if (response.statusCode == 498 || response.statusCode == 401) {
+        var refreshToken = await SecureStorage().readSecureData('refreshToken');
+        var newAccessToken = await refreshAccessToken(refreshToken);
+        if (newAccessToken.isNotEmpty) {
+          headers['authorization'] = newAccessToken;
+          final retryResponse =
+              await http.post(Uri.parse(url), headers: headers, body: body);
+          if (retryResponse.statusCode == 200) {
+            // print('-- RetryResponse.body ${retryResponse.body}');
+            // print('-- Retry JsonDecode:${jsonDecode(retryResponse.body)}');
+            dynamic responseData = jsonDecode(retryResponse.body);
+
+            return responseData['message'];
+          } else {
+            return null;
+          }
+        } else {
+          print('New Access Token is empty');
+          return null;
+        }
+      } else {
+        print('Failed to load data. Status code: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('Error: $e');
+      return null;
+    }
+  }
+
+  Future<String?> deleteStudentInsideClass(
+    String classID,
+    String studentID,
+  ) async {
+    final url =
+        'http://$baseURl:8080/api/admin/class/$classID/student/$studentID';
+    var accessToken = await getAccessToken();
+    var headers = {
+      'authorization': accessToken,
+    };
+    try {
+      final response = await http.delete(Uri.parse(url), headers: headers);
+      // print(jsonDecode(response.body));
+      if (response.statusCode == 200) {
+        dynamic responseData = jsonDecode(response.body);
+        String message = responseData['message'];
+        print('Message: $message');
+        return message;
+      } else if (response.statusCode == 498 || response.statusCode == 401) {
+        var refreshToken = await SecureStorage().readSecureData('refreshToken');
+        var newAccessToken = await refreshAccessToken(refreshToken);
+        if (newAccessToken.isNotEmpty) {
+          headers['authorization'] = newAccessToken;
+          final retryResponse =
+              await http.delete(Uri.parse(url), headers: headers);
+          if (retryResponse.statusCode == 200) {
+            // print('-- RetryResponse.body ${retryResponse.body}');
+            // print('-- Retry JsonDecode:${jsonDecode(retryResponse.body)}');
+            dynamic responseData = jsonDecode(retryResponse.body);
+            String message = responseData['message'];
+            print('Message: $message');
+            return message;
+          } else {
+            return '';
+          }
+        } else {
+          print('New Access Token is empty');
+          return '';
+        }
+      } else {
+        print('Failed to load data. Status code: ${response.statusCode}');
+        return '';
+      }
+    } catch (e) {
+      print('Error: $e');
+      return '';
+    }
+  }
+
+  Future<List<ClassModel>> getClassesInsideCourse(
+      String courseID, int page) async {
+    var URL =
+        'http://$baseURl:8080/api/admin/courses/$courseID/classes/page/$page'; //10.0.2.2
+
+    var accessToken = await getAccessToken();
+    var headers = {'authorization': accessToken};
+    try {
+      final response = await http.get(Uri.parse(URL), headers: headers);
+      if (response.statusCode == 200) {
+        dynamic responseData = jsonDecode(response.body);
+        List<ClassModel> data = [];
+
+        if (responseData is List) {
+          for (var temp in responseData) {
+            if (temp is Map<String, dynamic>) {
+              try {
+                data.add(ClassModel.fromJson(temp));
+              } catch (e) {
+                print('Error parsing data: $e');
+              }
+            } else {
+              print('Invalid data type: $temp');
+            }
+          }
+        } else if (responseData is Map<String, dynamic>) {
+          try {
+            data.add(ClassModel.fromJson(responseData));
+          } catch (e) {
+            print('Error parsing data: $e');
+          }
+        } else {
+          print('Unexpected data type: $responseData');
+        }
+        // print('Data $data');
+        return data;
+      } else if (response.statusCode == 498 || response.statusCode == 401) {
+        var refreshToken = await SecureStorage().readSecureData('refreshToken');
+        var newAccessToken = await refreshAccessToken(refreshToken);
+        if (newAccessToken.isNotEmpty) {
+          headers['authorization'] = newAccessToken;
+          final retryResponse =
+              await http.get(Uri.parse(URL), headers: headers);
+          if (retryResponse.statusCode == 200) {
+            dynamic responseData = jsonDecode(retryResponse.body);
+            List<ClassModel> data = [];
+
+            if (responseData is List) {
+              for (var temp in responseData) {
+                if (temp is Map<String, dynamic>) {
+                  try {
+                    data.add(ClassModel.fromJson(temp));
+                  } catch (e) {
+                    print('Error parsing data: $e');
+                  }
+                } else {
+                  print('Invalid data type: $temp');
+                }
+              }
+            } else if (responseData is Map<String, dynamic>) {
+              try {
+                data.add(ClassModel.fromJson(responseData));
+              } catch (e) {
+                print('Error parsing data: $e');
+              }
+            } else {
+              print('Unexpected data type: $responseData');
+            }
+
+            // print('Data $data');
+            return data;
+          } else {
+            return [];
+          }
+        } else {
+          print('New Access Token is empty');
+          return [];
+        }
+      } else {
+        print(
+            'Failed to load reports data. Status code: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('Error: $e');
+      return [];
+    }
+  }
+
+  // Future<List<Student>?> uploadExcelStudent(Uint8List excelBytes) async {
+  //   var uri = Uri.parse('http://$baseURl:8080/api/admin/submit/students');
+  //   var accessToken = await getAccessToken();
+  //   try {
+  //     var request = http.MultipartRequest("POST", uri);
+  //     var multipartFile = http.MultipartFile.fromBytes(
+  //       'file',
+  //       excelBytes,
+  //       filename: 'excel_file.xlsx',
+  //     );
+  //     request.files.add(multipartFile);
+  //     request.headers['Authorization'] = accessToken;
+  //     var response = await request.send();
+  //     if (response.statusCode == 200) {
+  //       var responseBody = await response.stream.bytesToString();
+  //       List<Student>? data = [];
+  //       if (responseBody.isNotEmpty) {
+  //         var jsonResponse = jsonDecode(responseBody);
+  //         if (jsonResponse.containsKey('data')) {
+  //           List studentList = jsonResponse['data'];
+  //           for (var studentData in studentList) {
+  //             try {
+  //               data.add(Student.fromJson(studentData));
+  //             } catch (e) {
+  //               print('Error parsing student data: $e');
+  //             }
+  //           }
+  //         } else {
+  //           print('No student data found in response');
+  //         }
+  //       } else {
+  //         print('Response body is empty');
+  //       }
+  //       return data;
+  //     } else if (response.statusCode == 498 || response.statusCode == 401) {
+  //       var refreshToken = await SecureStorage().readSecureData('refreshToken');
+  //       var newAccessToken = await refreshAccessToken(refreshToken);
+  //       if (newAccessToken.isNotEmpty) {
+  //         var retryRequest = http.MultipartRequest("POST", uri);
+  //         retryRequest.headers['Authorization'] = newAccessToken;
+  //         var retryMultipartFile = http.MultipartFile.fromBytes(
+  //           'file',
+  //           excelBytes,
+  //           filename: 'excel_file.xlsx',
+  //         );
+  //         retryRequest.files.add(retryMultipartFile);
+
+  //         var retryResponse = await retryRequest.send();
+  //         print('retryResponse status: ${retryResponse.statusCode}');
+  //         if (retryResponse.statusCode == 200) {
+  //           var retryReponsebody = await retryResponse.stream.bytesToString();
+  //           List<Student>? listStudent = [];
+  //           if (retryReponsebody.isNotEmpty) {
+  //             var jsonRetryResponse = jsonDecode(retryReponsebody);
+  //             if (jsonRetryResponse.containsKey('data')) {
+  //               List listData = jsonRetryResponse['data'];
+  //               for (var student in listData) {
+  //                 try {
+  //                   listStudent.add(Student.fromJson(student));
+  //                 } catch (e) {
+  //                   print('Error parsing student data: $e');
+  //                 }
+  //               }
+  //             } else {
+  //               print('No student data found in response');
+  //             }
+  //           }
+  //           return listStudent;
+  //         }
+  //       } else {
+  //         print('Access Token is empty');
+  //       }
+  //     } else {
+  //       print('Non-200 response: ${response.statusCode}');
+  //       return null;
+  //     }
+  //   } catch (e) {
+  //     print('Error uploading file: $e');
+  //     return null;
+  //   }
+  //   return null;
+  // }
 }

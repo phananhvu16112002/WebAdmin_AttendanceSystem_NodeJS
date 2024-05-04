@@ -5,12 +5,15 @@ import 'package:admin_attendancesystem_nodejs/common/base/CustomText.dart';
 import 'package:admin_attendancesystem_nodejs/common/base/CustomTextField.dart';
 import 'package:admin_attendancesystem_nodejs/common/colors/color.dart';
 import 'package:admin_attendancesystem_nodejs/models/Class.dart';
+import 'package:admin_attendancesystem_nodejs/models/CoursePage/CourseModel.dart';
 import 'package:admin_attendancesystem_nodejs/models/HomePage/ClassModel.dart';
+import 'package:admin_attendancesystem_nodejs/providers/selected_detail_provider.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Authentication/WelcomePage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/DetailClass/detail_class.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CoursePage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CreateNewLectuer.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CreateNewStudent.dart';
+import 'package:admin_attendancesystem_nodejs/screens/Home/HomePage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/Test/CreateNewClass.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/Test/LectuerTestPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/LectuersPage.dart';
@@ -25,21 +28,18 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'dart:html' as html;
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class DetailCourseScreen extends StatefulWidget {
+  const DetailCourseScreen({super.key, required this.courseModel});
+  final CourseModel courseModel;
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<DetailCourseScreen> createState() => _DetailCourseScreenState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _DetailCourseScreenState extends State<DetailCourseScreen> {
   TextEditingController searchController = TextEditingController();
   bool checkHome = true;
-  bool checkNotification = false;
-  bool checkLectuers = false;
-  bool checkStudents = false;
-  bool checkSettings = false;
-  bool checkCourse = false;
+  bool checkChart = false;
   bool checkCreateClass = false;
 
   OverlayEntry? overlayEntry;
@@ -55,29 +55,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    _loadToken();
-  }
-
-  Future<void> _loadToken() async {
-    String? loadToken = await storage.readSecureData('accessToken');
-    String? refreshToken1 = await storage.readSecureData('refreshToken');
-    if (loadToken.isEmpty ||
-        refreshToken1.isEmpty ||
-        loadToken.contains('No Data Found') ||
-        refreshToken1.contains('No Data Found')) {
-      // ignore: use_build_context_synchronously
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const WelcomePage()),
-      );
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final selectedPageProvider = Provider.of<SelectedPageProvider>(context);
     return Scaffold(
       appBar: appBar(),
       body: SingleChildScrollView(
@@ -86,10 +65,12 @@ class _HomePageState extends State<HomePage> {
             AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               width: isCollapsedOpen ? 250 : 70,
-              child: isCollapsedOpen ? leftHeader() : collapsedSideBar(),
+              child: isCollapsedOpen
+                  ? leftHeader(selectedPageProvider)
+                  : collapsedSideBar(),
             ),
             Expanded(
-              child: selectedPage(),
+              child: selectedPage(selectedPageProvider),
             ),
           ],
         ),
@@ -110,10 +91,7 @@ class _HomePageState extends State<HomePage> {
             onTap: () {
               setState(() {
                 checkHome = true;
-                checkNotification = false;
-                checkLectuers = false;
-                checkStudents = false;
-                checkSettings = false;
+                checkChart = false;
               });
             },
             child:
@@ -124,61 +102,12 @@ class _HomePageState extends State<HomePage> {
             onTap: () {
               setState(() {
                 checkHome = false;
-                checkNotification = true;
-                checkLectuers = false;
-                checkStudents = false;
-                checkSettings = false;
+                checkChart = true;
               });
             },
             child: iconCollapseSideBar(
-              const Icon(Icons.notifications_outlined),
-              checkNotification,
-            ),
-          ),
-          const SizedBox(height: 20),
-          InkWell(
-            onTap: () {
-              setState(() {
-                checkHome = false;
-                checkNotification = false;
-                checkLectuers = true;
-                checkStudents = false;
-                checkSettings = false;
-              });
-            },
-            child: iconCollapseSideBar(
-                const Icon(Icons.person_2_outlined), checkLectuers),
-          ),
-          const SizedBox(height: 20),
-          InkWell(
-            onTap: () {
-              setState(() {
-                checkHome = false;
-                checkNotification = false;
-                checkLectuers = false;
-                checkStudents = true;
-                checkSettings = false;
-              });
-            },
-            child: iconCollapseSideBar(
-              const Icon(Icons.person_3_outlined),
-              checkStudents,
-            ),
-          ),
-          const SizedBox(height: 20),
-          InkWell(
-            onTap: () {
-              setState(() {
-                checkHome = false;
-                checkNotification = false;
-                checkLectuers = false;
-                checkStudents = false;
-                checkSettings = true;
-              });
-            },
-            child: iconCollapseSideBar(
-              const Icon(Icons.settings_outlined),
-              checkSettings,
+              const Icon(Icons.pie_chart_outline),
+              checkChart,
             ),
           ),
         ],
@@ -201,6 +130,7 @@ class _HomePageState extends State<HomePage> {
 
   PreferredSizeWidget appBar() {
     return AppBar(
+      leading: Icon(null),
       backgroundColor: AppColors.colorHeader,
       flexibleSpace: Padding(
         padding:
@@ -307,28 +237,21 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget itemHeader(String title, Icon icon, bool check) {
+  Widget itemHeader(String title, Icon icon, bool check,
+      SelectedPageProvider selectedPageProvider) {
     return InkWell(
       onTap: () {
         setState(() {
-          checkHome = false;
-          checkNotification = false;
-          checkLectuers = false;
-          checkStudents = false;
-          checkSettings = false;
-          checkCourse = false;
-          if (title == 'Home') {
-            checkHome = true;
-          } else if (title == 'Notifications') {
-            checkNotification = true;
-          } else if (title == 'Courses') {
-            checkCourse = true;
-          } else if (title == 'Lectuers') {
-            checkLectuers = true;
-          } else if (title == 'Students') {
-            checkStudents = true;
-          } else if (title == 'Settings') {
-            checkSettings = true;
+          selectedPageProvider.setCheckHome(false);
+          selectedPageProvider.setCheckChart(false);
+          // checkHome = false;
+          // checkChart = false;
+          if (title == 'Manage Class') {
+            // checkHome = true;
+            selectedPageProvider.setCheckHome(true);
+          } else if (title == 'Dashboard') {
+            // checkChart = true;
+            selectedPageProvider.setCheckChart(true);
           }
         });
       },
@@ -361,7 +284,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget leftHeader() {
+  Widget leftHeader(SelectedPageProvider selectedPageProvider) {
     return Container(
       width: 250,
       height: MediaQuery.of(context).size.height,
@@ -375,6 +298,31 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(
+              height: 10,
+            ),
+            Center(
+              child: CustomButton(
+                buttonName: 'Create New Class',
+                backgroundColorButton: checkCreateClass
+                    ? const Color.fromARGB(62, 226, 240, 253)
+                    : Colors.transparent,
+                borderColor: Colors.black,
+                textColor: AppColors.textName,
+                function: () {
+                  setState(() {
+                    selectedPageProvider.setCheckHome(false);
+                    selectedPageProvider.setCheckChart(false);
+                    selectedPageProvider.setCheckCreateClass(true);
+                  });
+                },
+                height: 40,
+                width: 200,
+                fontSize: 12,
+                colorShadow: Colors.transparent,
+                borderRadius: 5,
+              ),
+            ),
+            const SizedBox(
               height: 5,
             ),
             const CustomText(
@@ -382,52 +330,31 @@ class _HomePageState extends State<HomePage> {
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
                 color: AppColors.secondaryText),
-            itemHeader('Home', const Icon(Icons.home_outlined), checkHome),
+            itemHeader('Manage Class', const Icon(Icons.home_outlined),
+                selectedPageProvider.getCheckHome, selectedPageProvider),
             const CustomText(
                 message: 'Analyze',
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
                 color: AppColors.secondaryText),
-            itemHeader('Notifications',
-                const Icon(Icons.notifications_outlined), checkNotification),
-            itemHeader('Courses', const Icon(Icons.bookmark_add_outlined),
-                checkCourse),
-            const CustomText(
-                message: 'Manage',
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: AppColors.secondaryText),
-            itemHeader(
-                'Lectuers', const Icon(Icons.person_2_outlined), checkLectuers),
-            itemHeader(
-                'Students', const Icon(Icons.person_2_outlined), checkStudents),
-            const CustomText(
-                message: 'Personal',
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: AppColors.secondaryText),
-            itemHeader(
-                'Settings', const Icon(Icons.settings_outlined), checkSettings),
+            itemHeader('Dashboard', const Icon(Icons.notifications_outlined),
+                selectedPageProvider.getcheckChart, selectedPageProvider),
           ],
         ),
       ),
     );
   }
 
-  Widget selectedPage() {
-    if (checkHome) {
+  Widget selectedPage(SelectedPageProvider selectedPageProvider) {
+    if (selectedPageProvider.getCheckHome) {
       return containerHome();
-    } else if (checkNotification) {
-      // html.window.history.pushState({}, 'Notification', '/Detail/Notification');
-      return const NotificationPage();
-    } else if (checkCourse) {
-      return const CoursePage();
-    } else if (checkLectuers) {
-      return const LecturerPage();
-    } else if (checkStudents) {
-      return const StudentsPage();
-    } else if (checkSettings) {
-      return const SettingPage();
+    } else if (selectedPageProvider.getcheckChart) {
+      // html..history.pushState({}, 'Notification', '/Detail/Notification');
+      return Container();
+    } else if (selectedPageProvider.getcheckCreateClass) {
+      return CreateNewClass(
+        courseModel: widget.courseModel,
+      );
     } else {
       return containerHome();
     }
@@ -639,42 +566,18 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(
                   height: 10,
                 ),
-                const CustomText(
-                    message: 'Home',
+                CustomText(
+                    message:
+                        'Course: ${widget.courseModel.courseName} - ID:${widget.courseModel.courseID} ',
                     fontSize: 25,
                     fontWeight: FontWeight.w800,
                     color: AppColors.primaryText),
                 const SizedBox(
-                  height: 10,
-                ),
-                SizedBox(
-                  width: MediaQuery.of(context).size.width - 250,
-                  height: 130,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      customBoxInformation(
-                          'Classes', 'assets/icons/class.png', 1000),
-                      const SizedBox(
-                        width: 40,
-                      ), // Show ben duoi theo class
-                      customBoxInformation(
-                          'Students', 'assets/icons/student.png', 1000),
-                      const SizedBox(
-                        width: 40,
-                      ), //show ben duoi theo list students
-                      customBoxInformation(
-                          'Lectuers',
-                          'assets/icons/lectuer.png',
-                          1000), // show ben duoi theo lsit lectuers
-                    ],
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
+                  height: 15,
                 ),
                 FutureBuilder(
-                  future: API(context).getClasses(page),
+                  future: API(context).getClassesInsideCourse(
+                      widget.courseModel.courseID, page),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       if (snapshot.data != null) {

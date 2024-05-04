@@ -375,9 +375,11 @@ class _HomePageTestState extends State<HomePageTest> {
     } else if (checkStudents) {
       return const StudentTestPage();
     } else if (checkSettings) {
-      return const CreateNewClass();
+      // return const CreateNewClass();
+      return Container();
     } else {
-      return CreateNewClass();
+      // return CreateNewClass();
+      return Container();
     }
   }
 

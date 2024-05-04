@@ -604,7 +604,7 @@ class _StudentsPageState extends State<StudentsPage> {
               ),
               InkWell(
                 onTap: () {
-                  _deleteLecturerDialog(studentAttendance, i);
+                  _deleteStudentDialog(studentAttendance, i);
                 },
                 child: TableCell(
                   child: Container(
@@ -754,7 +754,8 @@ class _StudentsPageState extends State<StudentsPage> {
                         listTemp[index].studentID = studentID;
                         listTemp[index].studentName = studentName;
                       });
-                      Navigator.of(context).pop();
+                      Navigator.pop(context);
+                      Navigator.pop(context);
                       Navigator.pop(context);
                     },
                   ),
@@ -803,7 +804,7 @@ class _StudentsPageState extends State<StudentsPage> {
     }
   }
 
-  Future<dynamic> _deleteLecturerDialog(List<Student> studentList, int i) {
+  Future<dynamic> _deleteStudentDialog(List<Student> studentList, int i) {
     return showDialog(
         context: context,
         builder: (builder) => AlertDialog(
@@ -814,8 +815,8 @@ class _StudentsPageState extends State<StudentsPage> {
                   fontWeight: FontWeight.bold,
                   color: AppColors.primaryText),
               actions: [
-                InkWell(
-                  onTap: () {
+                TextButton(
+                  onPressed: () {
                     Navigator.pop(context);
                   },
                   child: const CustomText(
@@ -824,8 +825,8 @@ class _StudentsPageState extends State<StudentsPage> {
                       fontWeight: FontWeight.w500,
                       color: AppColors.primaryButton),
                 ),
-                InkWell(
-                  onTap: () async {
+                TextButton(
+                  onPressed: () async {
                     _progressDialog.show();
                     bool? check = await API(context)
                         .deleteStudent(studentList[i].studentID);
