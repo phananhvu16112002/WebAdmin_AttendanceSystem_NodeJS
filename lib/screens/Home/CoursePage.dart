@@ -63,11 +63,11 @@ class _StudentsPageState extends State<CoursePage> {
     }
     List<CourseModel> temp = listData;
     for (var element in temp) {
-      if (element.courseName.contains(query) ||
-          element.courseName.toLowerCase().trim() ==
+      if (element.courseName!.contains(query) ||
+          element.courseName?.toLowerCase().trim() ==
               query.toLowerCase().trim() ||
-          element.courseID.contains(query) ||
-          element.courseID.toLowerCase().trim() == query.toLowerCase().trim()) {
+          element.courseID!.contains(query) ||
+          element.courseID?.toLowerCase().trim() == query.toLowerCase().trim()) {
         searchResult.add(element);
       }
     }
@@ -537,7 +537,7 @@ class _StudentsPageState extends State<CoursePage> {
                     padding: const EdgeInsets.all(5),
                     child: Center(
                       child: CustomText(
-                          message: studentAttendance[i].courseID,
+                          message: studentAttendance[i].courseID ?? '',
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                           color: Colors.black),
@@ -559,7 +559,7 @@ class _StudentsPageState extends State<CoursePage> {
                     color: Colors.white,
                     child: Center(
                       child: CustomText(
-                          message: studentAttendance[i].courseName,
+                          message: studentAttendance[i].courseName ?? '',
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                           color: Colors.black),
@@ -632,11 +632,11 @@ class _StudentsPageState extends State<CoursePage> {
                 onTap: () {
                   editCourse(
                       context,
-                      studentAttendance[i].courseID,
-                      studentAttendance[i].courseName,
-                      studentAttendance[i].totalWeeks,
-                      studentAttendance[i].requiredWeeks,
-                      studentAttendance[i].credit,
+                      studentAttendance[i].courseID ?? '',
+                      studentAttendance[i].courseName ?? '',
+                      studentAttendance[i].totalWeeks ?? 0,
+                      studentAttendance[i].requiredWeeks ?? 0,
+                      studentAttendance[i].credit ?? 0,
                       i);
                 },
                 child: TableCell(
@@ -709,7 +709,7 @@ class _StudentsPageState extends State<CoursePage> {
                   onPressed: () async {
                     _progressDialog.show();
                     bool? check = await API(context)
-                        .deleteCourse(studentAttendance[i].courseID);
+                        .deleteCourse(studentAttendance[i].courseID ?? '');
                     if (check != null && check) {
                       await _progressDialog.hide();
                       if (mounted) {

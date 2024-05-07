@@ -58,14 +58,14 @@ class _StudentsPageState extends State<LecturerPage> {
     }
     List<TeacherPage> temp = listData;
     for (var element in temp) {
-      if (element.teacherEmail.contains(query) ||
-          element.teacherEmail.toLowerCase().trim() ==
+      if (element.teacherEmail!.contains(query) ||
+          element.teacherEmail?.toLowerCase().trim() ==
               query.toLowerCase().trim() ||
-          element.teacherName.contains(query) ||
-          element.teacherName.toLowerCase().trim() ==
+          element.teacherName!.contains(query) ||
+          element.teacherName?.toLowerCase().trim() ==
               query.toLowerCase().trim() ||
-          element.teacherID.contains(query) ||
-          element.teacherName.toLowerCase().trim() ==
+          element.teacherID!.contains(query) ||
+          element.teacherName?.toLowerCase().trim() ==
               query.toLowerCase().trim()) {
         searchResult.add(element);
       }
@@ -726,7 +726,7 @@ class _StudentsPageState extends State<LecturerPage> {
                   padding: const EdgeInsets.all(5),
                   child: Center(
                     child: CustomText(
-                        message: teacherList[i].teacherID,
+                        message: teacherList[i].teacherID ?? '',
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: Colors.black),
@@ -739,7 +739,7 @@ class _StudentsPageState extends State<LecturerPage> {
                   color: Colors.white,
                   child: Center(
                     child: CustomText(
-                        message: teacherList[i].teacherName,
+                        message: teacherList[i].teacherName ?? '',
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: Colors.black),
@@ -765,7 +765,7 @@ class _StudentsPageState extends State<LecturerPage> {
                   color: Colors.white,
                   child: Center(
                     child: CustomText(
-                        message: teacherList[i].teacherEmail,
+                        message: teacherList[i].teacherEmail ?? '',
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: Colors.black),
@@ -788,8 +788,8 @@ class _StudentsPageState extends State<LecturerPage> {
               ),
               InkWell(
                 onTap: () {
-                  editLecturer(context, teacherList[i].teacherID,
-                      teacherList[i].teacherName, i);
+                  editLecturer(context, teacherList[i].teacherID ?? '',
+                      teacherList[i].teacherName ?? '', i);
                 },
                 child: TableCell(
                   child: Container(
@@ -958,7 +958,7 @@ class _StudentsPageState extends State<LecturerPage> {
                   onPressed: () async {
                     _progressDialog.show();
                     bool? check = await API(context)
-                        .deleteLecturer(teacherList[i].teacherID);
+                        .deleteLecturer(teacherList[i].teacherID ?? '');
                     if (check != null && check) {
                       await _progressDialog.hide();
                       if (mounted) {

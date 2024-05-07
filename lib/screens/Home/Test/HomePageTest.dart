@@ -8,7 +8,7 @@ import 'package:admin_attendancesystem_nodejs/screens/Home/CreateNewLectuer.dart
 import 'package:admin_attendancesystem_nodejs/screens/Home/CreateNewStudent.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/Test/ClassTestPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/Test/CourseTestPage.dart';
-import 'package:admin_attendancesystem_nodejs/screens/Home/Test/CreateNewClass.dart';
+import 'package:admin_attendancesystem_nodejs/screens/Home/CreateNewClass.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/Test/LectuerTestPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/LectuersPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/NotificationPage.dart';

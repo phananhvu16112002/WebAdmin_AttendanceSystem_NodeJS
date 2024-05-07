@@ -1,12 +1,12 @@
 class TeacherPage {
-   String teacherID;
-   String teacherName;
-   String teacherEmail;
+   String? teacherID;
+   String? teacherName;
+   String? teacherEmail;
 
   TeacherPage({
-    required this.teacherID,
-    required this.teacherName,
-    required this.teacherEmail,
+     this.teacherID,
+     this.teacherName,
+     this.teacherEmail,
   });
 
   factory TeacherPage.fromJson(Map<String, dynamic> json) {

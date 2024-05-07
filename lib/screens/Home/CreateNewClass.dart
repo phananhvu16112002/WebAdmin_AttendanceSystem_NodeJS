@@ -144,7 +144,7 @@ class _CreateAttendanceFormPageState extends State<CreateNewClass> {
   @override
   void initState() {
     super.initState();
-    courseIDController.text = widget.courseModel.courseID;
+    courseIDController.text = widget.courseModel.courseID ?? '';
     _progressDialog = ProgressDialog(context,
         customBody: Container(
           width: 200,

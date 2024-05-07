@@ -7,14 +7,16 @@ import 'package:admin_attendancesystem_nodejs/common/colors/color.dart';
 import 'package:admin_attendancesystem_nodejs/models/Class.dart';
 import 'package:admin_attendancesystem_nodejs/models/CoursePage/CourseModel.dart';
 import 'package:admin_attendancesystem_nodejs/models/HomePage/ClassModel.dart';
+import 'package:admin_attendancesystem_nodejs/models/HomePage/class_data_model.dart';
 import 'package:admin_attendancesystem_nodejs/providers/selected_detail_provider.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Authentication/WelcomePage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/DetailClass/detail_class.dart';
+import 'package:admin_attendancesystem_nodejs/screens/DetailCourse/chart_course_screen.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CoursePage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CreateNewLectuer.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CreateNewStudent.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/HomePage.dart';
-import 'package:admin_attendancesystem_nodejs/screens/Home/Test/CreateNewClass.dart';
+import 'package:admin_attendancesystem_nodejs/screens/Home/CreateNewClass.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/Test/LectuerTestPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/LectuersPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/NotificationPage.dart';
@@ -350,7 +352,7 @@ class _DetailCourseScreenState extends State<DetailCourseScreen> {
       return containerHome();
     } else if (selectedPageProvider.getcheckChart) {
       // html..history.pushState({}, 'Notification', '/Detail/Notification');
-      return Container();
+      return ChartInCourseScreen();
     } else if (selectedPageProvider.getcheckCreateClass) {
       return CreateNewClass(
         courseModel: widget.courseModel,
@@ -577,11 +579,11 @@ class _DetailCourseScreenState extends State<DetailCourseScreen> {
                 ),
                 FutureBuilder(
                   future: API(context).getClassesInsideCourse(
-                      widget.courseModel.courseID, page),
+                      widget.courseModel.courseID ?? '', page),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       if (snapshot.data != null) {
-                        List<ClassModel>? classes = snapshot.data;
+                        ClassData? classData = snapshot.data;
                         // Future.delayed(Duration.zero, () {
                         //   classDataProvider.setAttendanceFormData(classes!);
                         // });
@@ -595,9 +597,11 @@ class _DetailCourseScreenState extends State<DetailCourseScreen> {
                                         crossAxisSpacing: 10,
                                         childAspectRatio: 2.1,
                                         mainAxisSpacing: 10),
-                                itemCount: classes!.length,
+                                itemCount: classData?.classes?.length,
                                 itemBuilder: (context, index) {
-                                  ClassModel data = classes[index];
+                                  ClassModel? data =
+                                      classData?.classes?[index] ??
+                                          ClassModel();
                                   var randomBanner = Random().nextInt(3);
 
                                   return InkWell(
@@ -611,22 +615,22 @@ class _DetailCourseScreenState extends State<DetailCourseScreen> {
                                     },
                                     mouseCursor: SystemMouseCursors.click,
                                     child: customClass(
-                                        data.course.courseName,
-                                        data.classType,
-                                        data.group,
-                                        data.subGroup,
-                                        data.shiftNumber,
-                                        data.roomNumber,
+                                        data.course?.courseName ?? '',
+                                        data.classType ?? '',
+                                        data.group ?? '',
+                                        data.subGroup ?? '',
+                                        data.shiftNumber ?? 0,
+                                        data.roomNumber ?? '',
                                         'assets/images/banner$randomBanner.jpg',
-                                        data.teacher.teacherName,
-                                        data.teacher.teacherID,
+                                        data.teacher?.teacherName ?? '',
+                                        data.teacher?.teacherID ?? '',
                                         550),
                                   );
                                 }),
                             const SizedBox(
                               height: 10,
                             ),
-                            _buildPaginationButtons()
+                            _buildPaginationButtons(classData?.totalPage ?? 1)
                           ],
                         );
                       }
@@ -709,43 +713,63 @@ class _DetailCourseScreenState extends State<DetailCourseScreen> {
     );
   }
 
-  Widget _buildPaginationButtons() {
+  Widget _buildPaginationButtons(int totalPage) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         ElevatedButton(
-          onPressed: () {
-            if (page > 1) {
-              setState(() {
-                page--;
-              });
-            }
-          },
-          child: Text(
+          onPressed: page > 1
+              ? () {
+                  setState(() {
+                    page--;
+                  });
+                }
+              : null,
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.resolveWith<Color?>(
+              (states) {
+                if (states.contains(MaterialState.disabled)) {
+                  return Colors.grey.withOpacity(0.2);
+                }
+                return null; // Màu mặc định khi không bị vô hiệu hóa
+              },
+            ),
+          ),
+          child: const Text(
             'Previous',
             style: TextStyle(
               fontSize: 12,
             ),
           ),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: 10),
         CustomText(
-            message: '$page/3',
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: AppColors.primaryText),
-        SizedBox(width: 10),
+          message: '$page/$totalPage',
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          color: AppColors.primaryText,
+        ),
+        const SizedBox(width: 10),
         ElevatedButton(
-          // style: const ButtonStyle(
-          //   backgroundColor: MaterialStatePropertyAll(Colors.white),
-          // ),
-          onPressed: () {
-            setState(() {
-              page++;
-            });
-          },
-          child: Text(
+          onPressed: page < totalPage
+              ? () {
+                  setState(() {
+                    page++;
+                  });
+                }
+              : null,
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.resolveWith<Color?>(
+              (states) {
+                if (states.contains(MaterialState.disabled)) {
+                  return Colors.grey.withOpacity(0.2);
+                }
+                return null;
+              },
+            ),
+          ),
+          child: const Text(
             'Next',
             style: TextStyle(
               fontSize: 12,

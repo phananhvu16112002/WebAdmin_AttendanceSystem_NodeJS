@@ -1,16 +1,16 @@
 class CourseModel {
-  String courseID;
-  String courseName;
-  int totalWeeks;
-  int requiredWeeks;
-  int credit;
+  String? courseID;
+  String? courseName;
+  int? totalWeeks;
+  int? requiredWeeks;
+  int? credit;
 
   CourseModel({
-    required this.courseID,
-    required this.courseName,
-    required this.totalWeeks,
-    required this.requiredWeeks,
-    required this.credit,
+     this.courseID,
+     this.courseName,
+     this.totalWeeks,
+     this.requiredWeeks,
+     this.credit,
   });
 
   factory CourseModel.fromJson(Map<String, dynamic> json) {

@@ -6,12 +6,14 @@ import 'package:admin_attendancesystem_nodejs/common/base/CustomTextField.dart';
 import 'package:admin_attendancesystem_nodejs/common/colors/color.dart';
 import 'package:admin_attendancesystem_nodejs/models/Class.dart';
 import 'package:admin_attendancesystem_nodejs/models/HomePage/ClassModel.dart';
+import 'package:admin_attendancesystem_nodejs/models/HomePage/class_data_model.dart';
+import 'package:admin_attendancesystem_nodejs/models/HomePage/total_model.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Authentication/WelcomePage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/DetailClass/detail_class.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CoursePage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CreateNewLectuer.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CreateNewStudent.dart';
-import 'package:admin_attendancesystem_nodejs/screens/Home/Test/CreateNewClass.dart';
+import 'package:admin_attendancesystem_nodejs/screens/Home/CreateNewClass.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/Test/LectuerTestPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/LectuersPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/NotificationPage.dart';
@@ -41,12 +43,17 @@ class _HomePageState extends State<HomePage> {
   bool checkSettings = false;
   bool checkCourse = false;
   bool checkCreateClass = false;
+  int totalLecturer = 0;
+  int totalCourse = 0;
+  int totalClass = 0;
+  int totalStudent = 0;
 
   OverlayEntry? overlayEntry;
   int page = 1;
 
   bool isCollapsedOpen = true;
   SecureStorage storage = SecureStorage();
+  late Future<TotalModel?> _fetchTotalModel;
 
   void toggleDrawer() {
     setState(() {
@@ -59,6 +66,7 @@ class _HomePageState extends State<HomePage> {
     // TODO: implement initState
     super.initState();
     _loadToken();
+    fetchData();
   }
 
   Future<void> _loadToken() async {
@@ -74,6 +82,18 @@ class _HomePageState extends State<HomePage> {
         MaterialPageRoute(builder: (context) => const WelcomePage()),
       );
     }
+  }
+
+  void fetchData() async {
+    _fetchTotalModel = API(context).getTotalHomePage();
+    _fetchTotalModel.then((value) {
+      setState(() {
+        totalLecturer = value?.totalTeachers ?? 0;
+        totalStudent = value?.totalStudents ?? 0;
+        totalClass = value?.totalClasses ?? 0;
+        totalCourse = value?.totalCourses ?? 0;
+      });
+    });
   }
 
   @override
@@ -485,7 +505,7 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       Text(
                         className,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -496,7 +516,7 @@ class _HomePageState extends State<HomePage> {
                         children: [
                           Text(
                             'Group: $group - Sub: $subGroup | ',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                               color: Colors.white,
@@ -504,7 +524,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                           Text(
                             'Type: $typeClass',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                               color: Colors.white,
@@ -517,7 +537,7 @@ class _HomePageState extends State<HomePage> {
                         children: [
                           Text(
                             'Shift: $shiftNumber | ',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                               color: Colors.white,
@@ -525,7 +545,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                           Text(
                             'Room: $room',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                               color: Colors.white,
@@ -546,15 +566,15 @@ class _HomePageState extends State<HomePage> {
                   top: 0,
                   right: 0,
                   child: PopupMenuButton(
-                    icon: Icon(Icons.more_vert, color: Colors.white),
+                    icon: const Icon(Icons.more_vert, color: Colors.white),
                     onSelected: (value) {},
                     itemBuilder: (BuildContext bc) {
                       return [
-                        PopupMenuItem(
+                        const PopupMenuItem(
                           value: '/repository',
                           child: Text("Repository"),
                         ),
-                        PopupMenuItem(
+                        const PopupMenuItem(
                           value: '/delete',
                           child: Text("Delete"),
                         ),
@@ -571,11 +591,11 @@ class _HomePageState extends State<HomePage> {
             children: [
               IconButton(
                 onPressed: () {},
-                icon: Icon(Icons.person_2_outlined),
+                icon: const Icon(Icons.person_2_outlined),
               ),
               IconButton(
                 onPressed: () {},
-                icon: Icon(Icons.document_scanner_outlined),
+                icon: const Icon(Icons.document_scanner_outlined),
               )
             ],
           )
@@ -653,20 +673,31 @@ class _HomePageState extends State<HomePage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      customBoxInformation(
-                          'Classes', 'assets/icons/class.png', 1000),
+                      Expanded(
+                        child: customBoxInformation(
+                            'Classes', 'assets/icons/class.png', totalClass),
+                      ),
                       const SizedBox(
                         width: 40,
                       ), // Show ben duoi theo class
-                      customBoxInformation(
-                          'Students', 'assets/icons/student.png', 1000),
+                      Expanded(
+                        child: customBoxInformation(
+                            'Courses', 'assets/images/course.png', totalCourse),
+                      ),
                       const SizedBox(
                         width: 40,
-                      ), //show ben duoi theo list students
-                      customBoxInformation(
-                          'Lectuers',
-                          'assets/icons/lectuer.png',
-                          1000), // show ben duoi theo lsit lectuers
+                      ), 
+                      Expanded(
+                        child: customBoxInformation('Students',
+                            'assets/icons/student.png', totalStudent),
+                      ),
+                      const SizedBox(
+                        width: 40,
+                      ), 
+                      Expanded(
+                        child: customBoxInformation('Lectuers',
+                            'assets/icons/lectuer.png', totalLecturer),
+                      ),
                     ],
                   ),
                 ),
@@ -678,7 +709,7 @@ class _HomePageState extends State<HomePage> {
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       if (snapshot.data != null) {
-                        List<ClassModel>? classes = snapshot.data;
+                        ClassData? classesData = snapshot.data;
                         // Future.delayed(Duration.zero, () {
                         //   classDataProvider.setAttendanceFormData(classes!);
                         // });
@@ -692,9 +723,10 @@ class _HomePageState extends State<HomePage> {
                                         crossAxisSpacing: 10,
                                         childAspectRatio: 2.1,
                                         mainAxisSpacing: 10),
-                                itemCount: classes!.length,
+                                itemCount: classesData?.classes?.length,
                                 itemBuilder: (context, index) {
-                                  ClassModel data = classes[index];
+                                  ClassModel? data =
+                                      classesData!.classes?[index];
                                   var randomBanner = Random().nextInt(3);
 
                                   return InkWell(
@@ -703,27 +735,28 @@ class _HomePageState extends State<HomePage> {
                                           context,
                                           MaterialPageRoute(
                                               builder: (builder) => DetailPage(
-                                                    classModel: data,
+                                                    classModel:
+                                                        data ?? ClassModel(),
                                                   )));
                                     },
                                     mouseCursor: SystemMouseCursors.click,
                                     child: customClass(
-                                        data.course.courseName,
-                                        data.classType,
-                                        data.group,
-                                        data.subGroup,
-                                        data.shiftNumber,
-                                        data.roomNumber,
+                                        data?.course?.courseName ?? '',
+                                        data?.classType ?? '',
+                                        data?.group ?? '',
+                                        data?.subGroup ?? '',
+                                        data?.shiftNumber ?? 0,
+                                        data?.roomNumber ?? '',
                                         'assets/images/banner$randomBanner.jpg',
-                                        data.teacher.teacherName,
-                                        data.teacher.teacherID,
+                                        data?.teacher?.teacherName ?? '',
+                                        data?.teacher?.teacherID ?? '',
                                         550),
                                   );
                                 }),
                             const SizedBox(
                               height: 10,
                             ),
-                            _buildPaginationButtons()
+                            _buildPaginationButtons(classesData?.totalPage ?? 1)
                           ],
                         );
                       }
@@ -806,43 +839,110 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildPaginationButtons() {
+  // Widget _buildPaginationButtons(int totalPage) {
+  //   return Row(
+  //     crossAxisAlignment: CrossAxisAlignment.center,
+  //     mainAxisAlignment: MainAxisAlignment.end,
+  //     children: [
+  //       ElevatedButton(
+  //         onPressed: () {
+  //           if (page > 1) {
+  //             setState(() {
+  //               page--;
+  //             });
+  //           }
+  //         },
+  //         child: Text(
+  //           'Previous',
+  //           style: TextStyle(
+  //             fontSize: 12,
+  //           ),
+  //         ),
+  //       ),
+  //       SizedBox(width: 10),
+  //       CustomText(
+  //           message: '$page/${totalPage}',
+  //           fontSize: 13,
+  //           fontWeight: FontWeight.w500,
+  //           color: AppColors.primaryText),
+  //       SizedBox(width: 10),
+  //       ElevatedButton(
+  //         // style: const ButtonStyle(
+  //         //   backgroundColor: MaterialStatePropertyAll(Colors.white),
+  //         // ),
+  //         onPressed: () {
+  //           setState(() {
+  //             page++;
+  //           });
+  //         },
+  //         child: Text(
+  //           'Next',
+  //           style: TextStyle(
+  //             fontSize: 12,
+  //           ),
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
+
+  Widget _buildPaginationButtons(int totalPage) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         ElevatedButton(
-          onPressed: () {
-            if (page > 1) {
-              setState(() {
-                page--;
-              });
-            }
-          },
-          child: Text(
+          onPressed: page > 1
+              ? () {
+                  setState(() {
+                    page--;
+                  });
+                }
+              : null,
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.resolveWith<Color?>(
+              (states) {
+                if (states.contains(MaterialState.disabled)) {
+                  return Colors.grey.withOpacity(0.2);
+                }
+                return null; // Màu mặc định khi không bị vô hiệu hóa
+              },
+            ),
+          ),
+          child: const Text(
             'Previous',
             style: TextStyle(
               fontSize: 12,
             ),
           ),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: 10),
         CustomText(
-            message: '$page/3',
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: AppColors.primaryText),
-        SizedBox(width: 10),
+          message: '$page/$totalPage',
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          color: AppColors.primaryText,
+        ),
+        const SizedBox(width: 10),
         ElevatedButton(
-          // style: const ButtonStyle(
-          //   backgroundColor: MaterialStatePropertyAll(Colors.white),
-          // ),
-          onPressed: () {
-            setState(() {
-              page++;
-            });
-          },
-          child: Text(
+          onPressed: page < totalPage
+              ? () {
+                  setState(() {
+                    page++;
+                  });
+                }
+              : null,
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.resolveWith<Color?>(
+              (states) {
+                if (states.contains(MaterialState.disabled)) {
+                  return Colors.grey.withOpacity(0.2);
+                }
+                return null;
+              },
+            ),
+          ),
+          child: const Text(
             'Next',
             style: TextStyle(
               fontSize: 12,

@@ -10,6 +10,7 @@ import 'package:admin_attendancesystem_nodejs/models/HomePage/ClassModel.dart';
 import 'package:admin_attendancesystem_nodejs/models/StudentPage/Student.dart';
 import 'package:admin_attendancesystem_nodejs/models/test/StudentTest.dart';
 import 'package:admin_attendancesystem_nodejs/models/test/StudentTest.dart';
+import 'package:admin_attendancesystem_nodejs/screens/DetailClass/chart_class_screen.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/HomePage.dart';
 import 'package:admin_attendancesystem_nodejs/services/API.dart';
 import 'package:file_picker/file_picker.dart';
@@ -51,7 +52,7 @@ class _DetailPageState extends State<DetailPage> {
 
   void fetchData() async {
     _fetchListStudent =
-        API(context).getStudentsInClass(widget.classModel.classID);
+        API(context).getStudentsInClass(widget.classModel.classID ?? '');
     _fetchListStudent.then((value) {
       setState(() {
         listData = value;
@@ -70,13 +71,13 @@ class _DetailPageState extends State<DetailPage> {
     }
     List<StudentDetail> temp = listData;
     for (var element in temp) {
-      if (element.studentEmail!.contains(query) ||
+      if (element.studentEmail!.contains(query.trim()) ||
           element.studentEmail!.toLowerCase().trim() ==
               query.toLowerCase().trim() ||
-          element.studentName!.contains(query) ||
+          element.studentName!.contains(query.trim()) ||
           element.studentName?.toLowerCase().trim() ==
               query.toLowerCase().trim() ||
-          element.studentID!.contains(query) ||
+          element.studentID!.contains(query.trim()) ||
           element.studentID?.toLowerCase().trim() ==
               query.toLowerCase().trim()) {
         searchResult.add(element);
@@ -102,93 +103,95 @@ class _DetailPageState extends State<DetailPage> {
     }
   }
 
-  // Future<void> _uploadFile() async {
-  //   if (_excelBytes == null) {
-  //     // Fluttertoast.showToast(msg: 'Please select a file to upload');
-  //     print('null');
-  //     return;
-  //   }
-  //   try {
-  //     _progressDialog.show();
-  //     var response = await API(context).uploadExcelStudent(_excelBytes!);
-  //     print('response: $response');
-  //     if (response!.isNotEmpty) {
-  //       await _progressDialog.hide();
-  //       if (mounted) {
-  //         await showDialog(
-  //           context: context,
-  //           builder: (BuildContext context) {
-  //             return AlertDialog(
-  //               title: const Text("Upload Excel"),
-  //               content: Column(
-  //                 mainAxisSize: MainAxisSize.min,
-  //                 crossAxisAlignment: CrossAxisAlignment.start,
-  //                 children: [
-  //                   const Text("Upload file excel to server successfully"),
-  //                   const SizedBox(height: 8),
-  //                   Text(
-  //                     fileName,
-  //                     style: const TextStyle(fontWeight: FontWeight.bold),
-  //                   ),
-  //                 ],
-  //               ),
-  //               actions: <Widget>[
-  //                 TextButton(
-  //                   child: const Text("OK"),
-  //                   onPressed: () {
-  //                     setState(() {
-  //                       fileName = '';
-  //                       listTemp.addAll(response);
-  //                     });
-  //                     Navigator.of(context).pop();
-  //                   },
-  //                 ),
-  //               ],
-  //             );
-  //           },
-  //         );
-  //       }
+  Future<void> _uploadFile() async {
+    if (_excelBytes == null) {
+      // Fluttertoast.showToast(msg: 'Please select a file to upload');
+      print('null');
+      return;
+    }
+    try {
+      _progressDialog.show();
+      var response = await API(context).uploadExcelStudentInsideClass(
+          _excelBytes!, widget.classModel.classID ?? '');
+      print('response: $response');
+      if (response != null) {
+        await _progressDialog.hide();
+        if (mounted) {
+          await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Upload Excel"),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(response.message),
+                    const SizedBox(height: 8),
+                    Text(
+                      fileName,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text("OK"),
+                    onPressed: () {
+                      setState(() {
+                        fileName = '';
+                        listTemp.addAll(response.students);
+                      });
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
 
-  //       print('ok');
-  //     } else {
-  //       await _progressDialog.hide();
-  //       if (mounted) {
-  //         await showDialog(
-  //           context: context,
-  //           builder: (BuildContext context) {
-  //             return AlertDialog(
-  //               title: const Text("Upload Excel"),
-  //               content: Column(
-  //                 mainAxisSize: MainAxisSize.min,
-  //                 crossAxisAlignment: CrossAxisAlignment.start,
-  //                 children: [
-  //                   const Text("Failed upload file excel to server "),
-  //                   const SizedBox(height: 8),
-  //                   Text(
-  //                     fileName,
-  //                     style: const TextStyle(fontWeight: FontWeight.bold),
-  //                   ),
-  //                 ],
-  //               ),
-  //               actions: <Widget>[
-  //                 TextButton(
-  //                   child: const Text("OK"),
-  //                   onPressed: () {
-  //                     Navigator.of(context).pop();
-  //                   },
-  //                 ),
-  //               ],
-  //             );
-  //           },
-  //         );
-  //       }
+        print('ok');
+      } else {
+        await _progressDialog.hide();
+        if (mounted) {
+          await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Upload Excel"),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(response?.message ??
+                        "Failed upload file excel to server "),
+                    const SizedBox(height: 8),
+                    Text(
+                      fileName,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text("OK"),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
 
-  //       print('failed');
-  //     }
-  //   } catch (e) {
-  //     print('error');
-  //   }
-  // }
+        print('failed');
+      }
+    } catch (e) {
+      print('error');
+    }
+  }
 
   void toggleDrawer() {
     setState(() {
@@ -491,7 +494,7 @@ class _DetailPageState extends State<DetailPage> {
       return containerHome();
     } else if (checkChart) {
       // html.window.history.pushState({}, 'Notification', '/Detail/Notification');
-      return Container();
+      return ChartClassScreen(classModel: widget.classModel,);
     } else {
       return containerHome();
     }
@@ -511,7 +514,7 @@ class _DetailPageState extends State<DetailPage> {
             ),
             CustomText(
                 message:
-                    '${widget.classModel.course.courseName} - Room: ${widget.classModel.roomNumber} - Shift: ${widget.classModel.shiftNumber}',
+                    '${widget.classModel.course?.courseName} - Room: ${widget.classModel.roomNumber} - Shift: ${widget.classModel.shiftNumber}',
                 fontSize: 25,
                 fontWeight: FontWeight.w800,
                 color: AppColors.primaryText),
@@ -520,7 +523,7 @@ class _DetailPageState extends State<DetailPage> {
             ),
             CustomText(
                 message:
-                    'Lecturer: ${widget.classModel.teacher.teacherName} - ${widget.classModel.teacher.teacherID}',
+                    'Lecturer: ${widget.classModel.teacher?.teacherName} - ${widget.classModel.teacher?.teacherID}',
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
                 color: AppColors.primaryText),
@@ -610,6 +613,24 @@ class _DetailPageState extends State<DetailPage> {
                       textColor: Colors.white,
                       function: () {
                         createNewStudent(context);
+                      },
+                      height: 50,
+                      width: 150,
+                      fontSize: 12,
+                      colorShadow: Colors.white,
+                      borderRadius: 8),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  CustomButton(
+                      buttonName: 'Delete all student',
+                      backgroundColorButton: AppColors.importantText,
+                      borderColor: Colors.transparent,
+                      textColor: Colors.white,
+                      function: () {
+                        // showDialog(context: context, builder: (builder) => AlertDialog(
+
+                        // ));
                       },
                       height: 50,
                       width: 150,
@@ -1122,7 +1143,7 @@ class _DetailPageState extends State<DetailPage> {
                   onPressed: () async {
                     _progressDialog.show();
                     String? check = await API(context).deleteStudentInsideClass(
-                        widget.classModel.classID,
+                        widget.classModel.classID ?? '',
                         studentList[i].studentID ?? '');
                     if (check != null && check.isNotEmpty) {
                       await _progressDialog.hide();
@@ -1302,7 +1323,7 @@ class _DetailPageState extends State<DetailPage> {
 
   Widget customButtonUploadFile(String nameButton) {
     return InkWell(
-      // onTap: _uploadFile,
+      onTap: _uploadFile,
       mouseCursor: SystemMouseCursors.click,
       child: Container(
         width: 80,
@@ -1411,7 +1432,7 @@ class _DetailPageState extends State<DetailPage> {
                                   if (formkey.currentState!.validate()) {
                                     _submitStudent(
                                       studentIDController.text,
-                                      widget.classModel.classID,
+                                      widget.classModel.classID ?? '',
                                     );
                                   }
                                 },
@@ -1505,7 +1526,7 @@ class _DetailPageState extends State<DetailPage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('${response}'),
+                    Text('${response.message}'),
                   ],
                 ),
                 actions: <Widget>[
@@ -1513,7 +1534,7 @@ class _DetailPageState extends State<DetailPage> {
                     child: const Text("OK"),
                     onPressed: () {
                       setState(() {
-                        // listTemp.add(StudentDetail(studentID: ));
+                        listTemp.add(response.studentDetail);
                       });
                       Navigator.of(context).pop();
                     },
@@ -1537,7 +1558,7 @@ class _DetailPageState extends State<DetailPage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Failed create student"),
+                    Text(response?.message ?? ''),
                     const SizedBox(height: 8),
                     Text(
                       fileName,
