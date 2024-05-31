@@ -56,6 +56,11 @@ dependencies:
   excel: ^4.0.3
   fl_chart: ^0.35.0
   syncfusion_flutter_charts: ^25.1.42+1
+  file_saver: ^0.2.12
+
+  # syncfusion_flutter_charts: ^20.4.54
+
+  # syncfusion_flutter_xlsio: ^20.3.52
 
 dev_dependencies:
   flutter_test:

@@ -16,10 +16,10 @@ class LecturerPage extends StatefulWidget {
   const LecturerPage({super.key});
 
   @override
-  State<LecturerPage> createState() => _StudentsPageState();
+  State<LecturerPage> createState() => _LecturerPageState(); //_StudentsPageState
 }
 
-class _StudentsPageState extends State<LecturerPage> {
+class _LecturerPageState extends State<LecturerPage> {
   TextEditingController searchInDashboardController = TextEditingController();
   int currentPage = 0;
   int studentsPerPage = 10;

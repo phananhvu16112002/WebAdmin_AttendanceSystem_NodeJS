@@ -18,10 +18,10 @@ class CoursePage extends StatefulWidget {
   const CoursePage({super.key});
 
   @override
-  State<CoursePage> createState() => _StudentsPageState();
+  State<CoursePage> createState() => _CoursePageState();
 }
 
-class _StudentsPageState extends State<CoursePage> {
+class _CoursePageState extends State<CoursePage> {
   TextEditingController searchInDashboardController = TextEditingController();
   TextEditingController courseIDController = TextEditingController();
   TextEditingController courseNameController = TextEditingController();
@@ -67,7 +67,8 @@ class _StudentsPageState extends State<CoursePage> {
           element.courseName?.toLowerCase().trim() ==
               query.toLowerCase().trim() ||
           element.courseID!.contains(query) ||
-          element.courseID?.toLowerCase().trim() == query.toLowerCase().trim()) {
+          element.courseID?.toLowerCase().trim() ==
+              query.toLowerCase().trim()) {
         searchResult.add(element);
       }
     }

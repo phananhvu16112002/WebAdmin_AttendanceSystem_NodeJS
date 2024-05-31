@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:admin_attendancesystem_nodejs/common/colors/color.dart';
 import 'package:admin_attendancesystem_nodejs/providers/selected_detail_provider.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/HomePage.dart';
+import 'package:admin_attendancesystem_nodejs/screens/Home/PreviewExcel.dart';
+import 'package:admin_attendancesystem_nodejs/screens/Home/Test/PreviewStudent.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -25,8 +27,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  // This widget is the root of your application.
-  //Navigator.pushNamed and create a routes in main
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -40,6 +40,6 @@ class _MyAppState extends State<MyApp> {
               ColorScheme.fromSeed(seedColor: AppColors.backgroundColor),
           useMaterial3: false,
         ),
-        home: const HomePage());
+        home: HomePage());
   }
 }

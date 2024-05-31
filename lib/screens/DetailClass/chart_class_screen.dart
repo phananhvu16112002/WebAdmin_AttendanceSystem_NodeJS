@@ -186,7 +186,7 @@ class _ChartClassScreenState extends State<ChartClassScreen> {
             shouldAlwaysShow: true,
             tooltipSettings: const InteractiveTooltip(enable: true),
           ),
-          legend: const Legend(isVisible: true, isResponsive: true),
+          legend:  Legend(isVisible: true, isResponsive: true),
           tooltipBehavior: TooltipBehavior(enable: true),
           series: <CartesianSeries>[
             ColumnSeries<ChartData, String>(
@@ -272,7 +272,7 @@ class _ChartClassScreenState extends State<ChartClassScreen> {
             height: 20,
           ),
           SfCircularChart(
-            legend: const Legend(
+            legend:  Legend(
               isVisible: true,
               position: LegendPosition.right,
               textStyle: TextStyle(fontSize: 12),

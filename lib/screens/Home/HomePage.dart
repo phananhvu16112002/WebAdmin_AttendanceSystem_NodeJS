@@ -8,6 +8,7 @@ import 'package:admin_attendancesystem_nodejs/models/Class.dart';
 import 'package:admin_attendancesystem_nodejs/models/HomePage/ClassModel.dart';
 import 'package:admin_attendancesystem_nodejs/models/HomePage/class_data_model.dart';
 import 'package:admin_attendancesystem_nodejs/models/HomePage/total_model.dart';
+import 'package:admin_attendancesystem_nodejs/models/semester.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Authentication/WelcomePage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/DetailClass/detail_class.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CoursePage.dart';
@@ -19,6 +20,8 @@ import 'package:admin_attendancesystem_nodejs/screens/Home/LectuersPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/NotificationPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/SettingPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/StudentsPage.dart';
+import 'package:admin_attendancesystem_nodejs/screens/Home/PreviewExcel.dart';
+import 'package:admin_attendancesystem_nodejs/screens/Home/Test/PreviewStudent.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Test.dart';
 import 'package:admin_attendancesystem_nodejs/services/API.dart';
 import 'package:admin_attendancesystem_nodejs/services/SecureStorage.dart';
@@ -43,6 +46,8 @@ class _HomePageState extends State<HomePage> {
   bool checkSettings = false;
   bool checkCourse = false;
   bool checkCreateClass = false;
+  bool checkPreviewClassExcel = false;
+  bool checkPreviewStudentExcel = false;
   int totalLecturer = 0;
   int totalCourse = 0;
   int totalClass = 0;
@@ -54,6 +59,10 @@ class _HomePageState extends State<HomePage> {
   bool isCollapsedOpen = true;
   SecureStorage storage = SecureStorage();
   late Future<TotalModel?> _fetchTotalModel;
+  List<Semester> semesters = [];
+  String dropdownvalue = '';
+  int selectedIndex = 0;
+  late Future<List<Semester>> _fetchSemester;
 
   void toggleDrawer() {
     setState(() {
@@ -67,6 +76,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _loadToken();
     fetchData();
+    fetchSemester();
   }
 
   Future<void> _loadToken() async {
@@ -92,6 +102,16 @@ class _HomePageState extends State<HomePage> {
         totalStudent = value?.totalStudents ?? 0;
         totalClass = value?.totalClasses ?? 0;
         totalCourse = value?.totalCourses ?? 0;
+      });
+    });
+  }
+
+  void fetchSemester() async {
+    _fetchSemester = API(context).getSemester();
+    _fetchSemester.then((value) {
+      setState(() {
+        semesters = value;
+        dropdownvalue = semesters.first.semesterName ?? '';
       });
     });
   }
@@ -337,6 +357,9 @@ class _HomePageState extends State<HomePage> {
           checkStudents = false;
           checkSettings = false;
           checkCourse = false;
+          checkPreviewClassExcel = false;
+          checkPreviewStudentExcel = false;
+
           if (title == 'Home') {
             checkHome = true;
           } else if (title == 'Notifications') {
@@ -349,6 +372,10 @@ class _HomePageState extends State<HomePage> {
             checkStudents = true;
           } else if (title == 'Settings') {
             checkSettings = true;
+          } else if (title == 'Excel Class') {
+            checkPreviewClassExcel = true;
+          } else if (title == 'Excel Student') {
+            checkPreviewStudentExcel = true;
           }
         });
       },
@@ -395,8 +422,13 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(
-              height: 5,
+              height: 10,
             ),
+
+            // ElevatedButton(
+            //     onPressed: () {}, child: const Text('Read Class Excel')),
+            // ElevatedButton(
+            //     onPressed: () {}, child: const Text('Read Student Excel')),
             const CustomText(
                 message: 'Main',
                 fontSize: 12,
@@ -422,12 +454,27 @@ class _HomePageState extends State<HomePage> {
             itemHeader(
                 'Students', const Icon(Icons.person_2_outlined), checkStudents),
             const CustomText(
+                message: 'Excel',
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: AppColors.secondaryText),
+            itemHeader('Excel Class', const Icon(Icons.data_saver_on_outlined),
+                checkPreviewClassExcel),
+            itemHeader(
+                'Excel Student',
+                const Icon(Icons.person_add_alt_1_outlined),
+                checkPreviewStudentExcel),
+            const CustomText(
                 message: 'Personal',
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
                 color: AppColors.secondaryText),
             itemHeader(
                 'Settings', const Icon(Icons.settings_outlined), checkSettings),
+
+            const SizedBox(
+              height: 10,
+            ),
           ],
         ),
       ),
@@ -448,12 +495,17 @@ class _HomePageState extends State<HomePage> {
       return const StudentsPage();
     } else if (checkSettings) {
       return const SettingPage();
+    } else if (checkPreviewClassExcel) {
+      return const PreviewExcel();
+    } else if (checkPreviewStudentExcel) {
+      return const PreviewStudentExcel();
     } else {
       return containerHome();
     }
   }
 
   Widget customClass(
+      String classID,
       String className,
       String typeClass,
       String group,
@@ -574,7 +626,10 @@ class _HomePageState extends State<HomePage> {
                           value: '/repository',
                           child: Text("Repository"),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
+                          onTap: () {
+                            _deleteClassDialog(classID);
+                          },
                           value: '/delete',
                           child: Text("Delete"),
                         ),
@@ -669,7 +724,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 SizedBox(
                   width: MediaQuery.of(context).size.width - 250,
-                  height: 130,
+                  // height: 130,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -686,14 +741,14 @@ class _HomePageState extends State<HomePage> {
                       ),
                       const SizedBox(
                         width: 40,
-                      ), 
+                      ),
                       Expanded(
                         child: customBoxInformation('Students',
                             'assets/icons/student.png', totalStudent),
                       ),
                       const SizedBox(
                         width: 40,
-                      ), 
+                      ),
                       Expanded(
                         child: customBoxInformation('Lectuers',
                             'assets/icons/lectuer.png', totalLecturer),
@@ -703,6 +758,48 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(
                   height: 10,
+                ),
+                Row(
+                  children: [
+                    CustomText(
+                        message: 'Select semester',
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.primaryText),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                              color: AppColors.primaryText.withOpacity(0.2))),
+                      child: DropdownButton<String>(
+                        focusColor: Colors.transparent,
+                        underline: Container(),
+                        value: dropdownvalue,
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            dropdownvalue = newValue!;
+                          });
+                        },
+                        iconSize: 15,
+                        menuMaxHeight: 150,
+                        style: TextStyle(fontSize: 15),
+                        items: semesters
+                            .map<DropdownMenuItem<String>>((Semester value) {
+                          return DropdownMenuItem<String>(
+                            value: value.semesterName,
+                            child: Text(value.semesterName ?? ''),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 5,
                 ),
                 FutureBuilder(
                   future: API(context).getClasses(page),
@@ -741,6 +838,7 @@ class _HomePageState extends State<HomePage> {
                                     },
                                     mouseCursor: SystemMouseCursors.click,
                                     child: customClass(
+                                        data?.classID ?? '',
                                         data?.course?.courseName ?? '',
                                         data?.classType ?? '',
                                         data?.group ?? '',
@@ -837,6 +935,94 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+
+  Future<dynamic> _deleteClassDialog(String classID) {
+    return showDialog(
+        context: context,
+        builder: (builder) => AlertDialog(
+              backgroundColor: Colors.white,
+              title: const CustomText(
+                  message: 'Are you want to delete class ?',
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryText),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: CustomText(
+                        message: 'Cancel',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.primaryButton)),
+                TextButton(
+                  onPressed: () async {
+                    String? check = await API(context).deleteClass(classID);
+                    if (check != null && check.isNotEmpty) {
+                      if (mounted) {
+                        showDialog(
+                          context: context,
+                          builder: (builder) => AlertDialog(
+                            title: CustomText(
+                                message: check,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primaryText),
+                            actions: [
+                              InkWell(
+                                onTap: () {
+                                  setState(() {});
+                                  Navigator.pop(context);
+                                  Navigator.pop(context);
+                                },
+                                child: const CustomText(
+                                    message: 'OK',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.primaryButton),
+                              )
+                            ],
+                          ),
+                        );
+                      }
+                    } else {
+                      // await _progressDialog.hide();
+                      if (mounted) {
+                        showDialog(
+                          context: context,
+                          builder: (builder) => AlertDialog(
+                            title: CustomText(
+                                message: check ?? 'Delete class failed',
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primaryButton),
+                            actions: [
+                              InkWell(
+                                onTap: () {
+                                  Navigator.pop(context);
+                                },
+                                child: const CustomText(
+                                    message: 'OK',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.importantText),
+                              )
+                            ],
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  child: const CustomText(
+                      message: 'Accept',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.importantText),
+                ),
+              ],
+            ));
   }
 
   // Widget _buildPaginationButtons(int totalPage) {
