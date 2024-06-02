@@ -5,7 +5,7 @@ import 'package:admin_attendancesystem_nodejs/common/base/CustomText.dart';
 import 'package:admin_attendancesystem_nodejs/common/colors/color.dart';
 import 'package:admin_attendancesystem_nodejs/models/semester.dart';
 import 'package:admin_attendancesystem_nodejs/services/API.dart';
-import 'package:excel/excel.dart';
+import 'package:flutter_excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
@@ -51,6 +51,7 @@ class _PreviewExcelState extends State<PreviewExcel> {
         fileName = result.files.single.name;
       });
     }
+    print(dropdownvalue);
   }
 
   Future<void> _uploadFile() async {
@@ -58,113 +59,129 @@ class _PreviewExcelState extends State<PreviewExcel> {
       return;
     }
     try {
-      _progressDialog.show();
-      var response = await API(context).uploadExcelCourses(_excelBytes!);
-      print('response: $response');
-      if (response!.isNotEmpty) {
-        await _progressDialog.hide();
-        if (mounted) {
-          await showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text("Upload Excel"),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text("Upload file excel to server successfully"),
-                    const SizedBox(height: 8),
-                    Text(
-                      fileName,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                actions: <Widget>[
-                  TextButton(
-                    child: const Text("OK"),
-                    onPressed: () {
-                      setState(() {
-                        fileName = '';
-                      });
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
-          );
-        }
+      await API(context).UploadExcelMigration(_excelBytes!, dropdownvalue);
+      // _progressDialog.show();
+      // var response = await API(context).uploadExcelCourses(_excelBytes!);
+      // print('response: $response');
+      // if (response!.isNotEmpty) {
+      //   await _progressDialog.hide();
+      //   if (mounted) {
+      //     await showDialog(
+      //       context: context,
+      //       builder: (BuildContext context) {
+      //         return AlertDialog(
+      //           title: const Text("Upload Excel"),
+      //           content: Column(
+      //             mainAxisSize: MainAxisSize.min,
+      //             crossAxisAlignment: CrossAxisAlignment.start,
+      //             children: [
+      //               const Text("Upload file excel to server successfully"),
+      //               const SizedBox(height: 8),
+      //               Text(
+      //                 fileName,
+      //                 style: const TextStyle(fontWeight: FontWeight.bold),
+      //               ),
+      //             ],
+      //           ),
+      //           actions: <Widget>[
+      //             TextButton(
+      //               child: const Text("OK"),
+      //               onPressed: () {
+      //                 setState(() {
+      //                   fileName = '';
+      //                 });
+      //                 Navigator.of(context).pop();
+      //               },
+      //             ),
+      //           ],
+      //         );
+      //       },
+      //     );
+      //   }
 
-        print('ok');
-      } else {
-        await _progressDialog.hide();
-        if (mounted) {
-          await showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text("Upload Excel"),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text("Failed upload file excel to server "),
-                    const SizedBox(height: 8),
-                    Text(
-                      fileName,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                actions: <Widget>[
-                  TextButton(
-                    child: const Text("OK"),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
-          );
-        }
+      //   print('ok');
+      // } else {
+      //   await _progressDialog.hide();
+      //   if (mounted) {
+      //     await showDialog(
+      //       context: context,
+      //       builder: (BuildContext context) {
+      //         return AlertDialog(
+      //           title: const Text("Upload Excel"),
+      //           content: Column(
+      //             mainAxisSize: MainAxisSize.min,
+      //             crossAxisAlignment: CrossAxisAlignment.start,
+      //             children: [
+      //               const Text("Failed upload file excel to server "),
+      //               const SizedBox(height: 8),
+      //               Text(
+      //                 fileName,
+      //                 style: const TextStyle(fontWeight: FontWeight.bold),
+      //               ),
+      //             ],
+      //           ),
+      //           actions: <Widget>[
+      //             TextButton(
+      //               child: const Text("OK"),
+      //               onPressed: () {
+      //                 Navigator.of(context).pop();
+      //               },
+      //             ),
+      //           ],
+      //         );
+      //       },
+      //     );
+      //   }
 
-        print('failed');
-      }
+      //   print('failed');
+      // }
     } catch (e) {
       print('error');
     }
   }
 
   Future<void> pickAndReadExcel() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+    try {
+      print("Pick file");
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['xlsx', 'xls'],
+      allowMultiple: false,
     );
-
+    print("read files");
     if (result != null) {
       _clearExcelData();
       _index = 1;
-      List<int> excelBytes = result.files.single.bytes!;
-      var excel = Excel.decodeBytes(excelBytes);
-
-      var table = excel.tables.keys.first;
+      print("read bytes");
+      var bytes = result.files.single.bytes!;
+      var excel = Excel.decodeBytes(bytes);
+      var tableKey = excel.tables.keys.first;
+      var table = excel.tables[tableKey];
+      List<List<String>> excelData = [];
       var isFirstRow = true;
-      for (var row in excel.tables[table]!.rows) {
-        if (!isFirstRow) {
+      for (var j = 0; j < table!.rows.length; j++){
+        var row = table!.rows[j];
+        if (!isFirstRow){
           List<String> rowData = [];
-          for (var cell in row) {
-            rowData.add(cell?.value.toString() ?? '');
+          for (var i = 0; i < row.length; i++){
+            var cell = row[i];
+            if (i == 0) {
+              rowData.add(j.toString());
+            }else {
+              rowData.add(cell?.value.toString() ?? "");
+            }
           }
-          _excelData.add(rowData);
+          excelData.add(rowData);
         } else {
           isFirstRow = false;
         }
       }
-
-      setState(() {});
+      setState(() {
+        _excelData = excelData;
+      });
+    }
+    } catch (e) {
+      print(e);
     }
   }
 
@@ -186,6 +203,7 @@ class _PreviewExcelState extends State<PreviewExcel> {
   }
 
   Future<void> uploadData() async {
+    print("Upload to server");
     _exportEditedDataToExcel();
   }
 
@@ -242,7 +260,7 @@ class _PreviewExcelState extends State<PreviewExcel> {
     for (var j = 0; j < headers.length; j++) {
       sheet
           .cell(CellIndex.indexByColumnRow(rowIndex: 0, columnIndex: j))
-          .value = TextCellValue(headers[j]);
+          .value = headers[j];
     }
 
     for (var i = 0; i < _excelData.length; i++) {
@@ -250,20 +268,20 @@ class _PreviewExcelState extends State<PreviewExcel> {
         if (j == 0) {
           sheet
               .cell(CellIndex.indexByColumnRow(rowIndex: i + 1, columnIndex: j))
-              .value = TextCellValue((i + 1).toString());
+              .value = (i + 1).toString();
         } else {
           sheet
               .cell(CellIndex.indexByColumnRow(rowIndex: i + 1, columnIndex: j))
-              .value = TextCellValue(_excelData[i][j]);
+              .value = _excelData[i][j];
         }
       }
     }
 
     final List<int> excelBytes = excel.encode()!;
     const String fileName = 'edited_data.xlsx';
-
-    await FileSaver.instance
-        .saveFile(bytes: Uint8List.fromList(excelBytes), name: fileName);
+    await API(context).UploadExcelMigration(excelBytes as Uint8List, dropdownvalue);
+    // await FileSaver.instance
+    //     .saveFile(bytes: Uint8List.fromList(excelBytes), name: fileName);
   }
 
   void _clearExcelData() {
@@ -277,7 +295,7 @@ class _PreviewExcelState extends State<PreviewExcel> {
     _fetchSemester.then((value) {
       setState(() {
         semesters = value;
-        dropdownvalue = semesters.first.semesterName ?? '';
+        dropdownvalue = semesters.first.semesterID.toString() ?? '';
       });
     });
   }
@@ -327,7 +345,7 @@ class _PreviewExcelState extends State<PreviewExcel> {
                         items: semesters
                             .map<DropdownMenuItem<String>>((Semester value) {
                           return DropdownMenuItem<String>(
-                            value: value.semesterName,
+                            value: value.semesterID.toString(),
                             child: Text(value.semesterName ?? ''),
                           );
                         }).toList(),

@@ -272,6 +272,50 @@ class API {
     return null;
   }
 
+  Future<void> UploadExcelMigration(Uint8List excelBytes, String dropdownvalue) async {
+    var uri = Uri.parse('http://$baseURl:8080/api/admin/class/submit');
+    var accessToken = await getAccessToken();
+    try {
+      var request = http.MultipartRequest("POST", uri);
+      var multipartFile = http.MultipartFile.fromBytes(
+        'file',
+        excelBytes,
+        filename: 'excel_file.xlsx',
+      );
+      request.files.add(multipartFile);
+      request.headers['Authorization'] = accessToken;
+      request.fields['semesterID'] = dropdownvalue;
+      print("request done");
+      var response = await request.send();
+      if (response.statusCode == 498 || response.statusCode == 401){
+        var refreshToken = await SecureStorage().readSecureData('refreshToken');
+        var newAccessToken = await refreshAccessToken(refreshToken);
+        if (newAccessToken.isNotEmpty) {
+          var request = http.MultipartRequest("POST", uri);
+          var multipartFile = http.MultipartFile.fromBytes(
+            'file',
+            excelBytes,
+            filename: 'excel_file.xlsx',
+          );
+          request.files.add(multipartFile);
+          request.headers['Authorization'] = newAccessToken;
+          request.fields['semesterID'] = dropdownvalue;
+          print("request done");
+          var response = await request.send();
+          // Tạo một MultipartFile mới cho request thử lại
+          
+
+          
+        } else {
+          print('Access Token is empty');
+          return;
+        }
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
   Future<List<CourseModel>?> uploadExcelCourses(Uint8List excelBytes) async {
     var uri = Uri.parse('http://$baseURl:8080/api/admin/submit/courses');
     var accessToken = await getAccessToken();
