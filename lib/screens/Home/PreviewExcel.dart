@@ -5,7 +5,7 @@ import 'package:admin_attendancesystem_nodejs/common/base/CustomText.dart';
 import 'package:admin_attendancesystem_nodejs/common/colors/color.dart';
 import 'package:admin_attendancesystem_nodejs/models/semester.dart';
 import 'package:admin_attendancesystem_nodejs/services/API.dart';
-import 'package:excel/excel.dart';
+import 'package:flutter_excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +23,7 @@ class _PreviewExcelState extends State<PreviewExcel> {
   List<List<String>> _excelData = [];
   bool _isEditMode = false;
   Map<List<int>, String> _editedCells = {};
-  int _index = 1; // Thêm biến để theo dõi số thứ tự
+  int _index = 1; 
   late ProgressDialog _progressDialog;
   Uint8List? _excelBytes;
   String fileName = '';
@@ -31,6 +31,7 @@ class _PreviewExcelState extends State<PreviewExcel> {
   List<Semester> semesters = [];
   String dropdownvalue = '';
   int selectedIndex = 0;
+  int? selectedSemesterID; 
   late Future<List<Semester>> _fetchSemester;
 
   @override
@@ -137,34 +138,83 @@ class _PreviewExcelState extends State<PreviewExcel> {
       print('error');
     }
   }
+  //v1 10/7 Vu
+  // Future<void> pickAndReadExcel() async {
+  //   FilePickerResult? result = await FilePicker.platform.pickFiles(
+  //     type: FileType.custom,
+  //     allowedExtensions: ['xlsx', 'xls'],
+  //   );
 
+  //   if (result != null) {
+  //     _clearExcelData();
+  //     _index = 1;
+  //     List<int> excelBytes = result.files.single.bytes!;
+  //     var excel = Excel.decodeBytes(excelBytes);
+
+  //     var table = excel.tables.keys.first;
+  //     var isFirstRow = true;
+  //     int maxColumns = 18;
+  //     for (var row in excel.tables[table]!.rows) {
+  //       if (!isFirstRow) {
+  //         List<String> rowData = [];
+  //         for (var i = 0; i < row.length && i < maxColumns; i++) {
+  //           rowData.add(row[i]?.value.toString() ?? '');
+  //         }
+  //         _excelData.add(rowData);
+  //       } else {
+  //         isFirstRow = false;
+  //       }
+  //     }
+
+  //     setState(() {});
+  //   }
+  // }
+
+  //v2
   Future<void> pickAndReadExcel() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+    try {
+      print("Pick file");
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['xlsx', 'xls'],
+      allowMultiple: false,
     );
-
+    print("read files");
     if (result != null) {
       _clearExcelData();
       _index = 1;
-      List<int> excelBytes = result.files.single.bytes!;
-      var excel = Excel.decodeBytes(excelBytes);
-
-      var table = excel.tables.keys.first;
+      print("read bytes");
+      var bytes = result.files.single.bytes!;
+      //loading
+      var excel = Excel.decodeBytes(bytes);
+      //off loading
+      var tableKey = excel.tables.keys.first;
+      var table = excel.tables[tableKey];
+      List<List<String>> excelData = [];
       var isFirstRow = true;
-      for (var row in excel.tables[table]!.rows) {
-        if (!isFirstRow) {
+      for (var j = 0; j < table!.rows.length; j++){
+        var row = table!.rows[j];
+        if (!isFirstRow){
           List<String> rowData = [];
-          for (var cell in row) {
-            rowData.add(cell?.value.toString() ?? '');
+          for (var i = 0; i < row.length; i++){
+            var cell = row[i];
+            if (i == 0) {
+              rowData.add(j.toString());
+            }else {
+              rowData.add(cell?.value.toString() ?? "");
+            }
           }
-          _excelData.add(rowData);
+          excelData.add(rowData);
         } else {
           isFirstRow = false;
         }
       }
-
-      setState(() {});
+      setState(() {
+        _excelData = excelData;
+      });
+    }
+    } catch (e) {
+      print(e);
     }
   }
 
@@ -188,31 +238,6 @@ class _PreviewExcelState extends State<PreviewExcel> {
   Future<void> uploadData() async {
     _exportEditedDataToExcel();
   }
-
-  // void _exportEditedDataToExcel() async {
-  //   var excel = Excel.createExcel();
-  //   var sheet = excel['Sheet1'];
-  //   for (var i = 0; i < _excelData.length; i++) {
-  //     for (var j = 0; j < _excelData[i].length; j++) {
-  //       if (j == 0) {
-  //         sheet
-  //             .cell(CellIndex.indexByColumnRow(rowIndex: i, columnIndex: j))
-  //             .value = TextCellValue(_index.toString());
-  //       } else {
-  //         sheet
-  //             .cell(CellIndex.indexByColumnRow(rowIndex: i, columnIndex: j))
-  //             .value = TextCellValue(_excelData[i][j]);
-  //       }
-  //     }
-  //     _index++;
-  //   }
-
-  //   final List<int> excelBytes = excel.encode()!;
-  //   const String fileName = 'edited_data.xlsx';
-
-  //   await FileSaver.instance
-  //       .saveFile(bytes: Uint8List.fromList(excelBytes), name: fileName);
-  // }
 
   void _exportEditedDataToExcel() async {
     var excel = Excel.createExcel();
@@ -239,31 +264,91 @@ class _PreviewExcelState extends State<PreviewExcel> {
       'Email TDTU'
     ];
 
-    for (var j = 0; j < headers.length; j++) {
+    int maxColumns = 18;
+
+    for (var j = 0; j < headers.length && j < maxColumns; j++) {
       sheet
           .cell(CellIndex.indexByColumnRow(rowIndex: 0, columnIndex: j))
-          .value = TextCellValue(headers[j]);
+          .value = headers[j];
     }
 
     for (var i = 0; i < _excelData.length; i++) {
-      for (var j = 0; j < _excelData[i].length; j++) {
+      for (var j = 0; j < _excelData[i].length && j < maxColumns; j++) {
         if (j == 0) {
           sheet
               .cell(CellIndex.indexByColumnRow(rowIndex: i + 1, columnIndex: j))
-              .value = TextCellValue((i + 1).toString());
+              .value = (i + 1).toString();
         } else {
           sheet
               .cell(CellIndex.indexByColumnRow(rowIndex: i + 1, columnIndex: j))
-              .value = TextCellValue(_excelData[i][j]);
+              .value = _excelData[i][j];
         }
       }
     }
 
     final List<int> excelBytes = excel.encode()!;
-    const String fileName = 'edited_data.xlsx';
-
-    await FileSaver.instance
-        .saveFile(bytes: Uint8List.fromList(excelBytes), name: fileName);
+    String? result = await API(context)
+        .uploadClassByTeacher(Uint8List.fromList(excelBytes), selectedSemesterID!);
+    if (result != null && result.isNotEmpty) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Upload Excel"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("Upload file excel to server successfully"),
+                const SizedBox(height: 8),
+                Text(
+                  fileName,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text("OK"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+    else {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Upload Excel"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("Upload file excel to server failed"),
+                const SizedBox(height: 8),
+                Text(
+                  fileName,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text("OK"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 
   void _clearExcelData() {
@@ -278,6 +363,8 @@ class _PreviewExcelState extends State<PreviewExcel> {
       setState(() {
         semesters = value;
         dropdownvalue = semesters.first.semesterName ?? '';
+        selectedSemesterID = semesters.first.semesterID;
+        print('semetes $selectedSemesterID');
       });
     });
   }
@@ -319,6 +406,10 @@ class _PreviewExcelState extends State<PreviewExcel> {
                         onChanged: (String? newValue) {
                           setState(() {
                             dropdownvalue = newValue!;
+                            selectedSemesterID = semesters.firstWhere((semester) =>
+                                semester.semesterName == newValue).semesterID;
+                            print('semetes selected $selectedSemesterID');
+                            
                           });
                         },
                         iconSize: 15,
@@ -419,24 +510,24 @@ class _PreviewExcelState extends State<PreviewExcel> {
       scrollDirection: Axis.horizontal,
       child: Table(
         columnWidths: const {
-          0: FixedColumnWidth(40), //tt
-          1: FixedColumnWidth(65), //ma mh
-          2: FixedColumnWidth(50), //nhom
-          3: FixedColumnWidth(40), //to
-          4: FixedColumnWidth(100), //mon day
-          5: FixedColumnWidth(45), // sosv
-          6: FixedColumnWidth(40), //thu
-          7: FixedColumnWidth(100), //tuan hoc
-          8: FixedColumnWidth(100), //tiet
-          9: FixedColumnWidth(70), //sotiet
-          10: FixedColumnWidth(80),
-          11: FixedColumnWidth(100),
-          12: FixedColumnWidth(100),
-          13: FixedColumnWidth(100),
-          14: FixedColumnWidth(100),
-          15: FixedColumnWidth(150),
-          16: FixedColumnWidth(100),
-          17: FixedColumnWidth(80),
+          0: FixedColumnWidth(40), // TT
+          1: FixedColumnWidth(65), // Mã MH
+          2: FixedColumnWidth(50), // Nhóm
+          3: FixedColumnWidth(40), // Tổ
+          4: FixedColumnWidth(100), // Môn dạy
+          5: FixedColumnWidth(45), // Số SV
+          6: FixedColumnWidth(40), // Thứ
+          7: FixedColumnWidth(100), // Tuần học
+          8: FixedColumnWidth(100), // Tiết
+          9: FixedColumnWidth(70), // Số tiết
+          10: FixedColumnWidth(80), // Phòng học
+          11: FixedColumnWidth(100), // Ngày bắt đầu
+          12: FixedColumnWidth(100), // Ngày kết thúc
+          13: FixedColumnWidth(100), // Giảng viên
+          14: FixedColumnWidth(100), // Lớp ngôn ngữ
+          15: FixedColumnWidth(150), // Link classroom
+          16: FixedColumnWidth(100), // Ghi chú
+          17: FixedColumnWidth(80), // Email TDTU
         },
         border: TableBorder.all(color: AppColors.secondaryText),
         children: [
@@ -507,9 +598,9 @@ class _PreviewExcelState extends State<PreviewExcel> {
 
   TableCell _cellData(String data) {
     String formattedDate = data;
-    if (data.contains('T00:00:00.000Z')) {
-      formattedDate = formatDate(data);
-    }
+    if (RegExp(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}$').hasMatch(data)) {
+    formattedDate = formatDate(data);
+  }
     return TableCell(
       child: Container(
         padding: const EdgeInsets.all(5),

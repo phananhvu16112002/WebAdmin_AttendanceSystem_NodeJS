@@ -15,13 +15,14 @@ import 'package:admin_attendancesystem_nodejs/screens/Home/CoursePage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CreateNewLectuer.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CreateNewStudent.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/CreateNewClass.dart';
+import 'package:admin_attendancesystem_nodejs/screens/Home/SemesterPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/Test/LectuerTestPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/LectuersPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/NotificationPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/SettingPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/StudentsPage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/PreviewExcel.dart';
-import 'package:admin_attendancesystem_nodejs/screens/Home/Test/PreviewStudent.dart';
+import 'package:admin_attendancesystem_nodejs/screens/Home/PreviewStudent.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Test.dart';
 import 'package:admin_attendancesystem_nodejs/services/API.dart';
 import 'package:admin_attendancesystem_nodejs/services/SecureStorage.dart';
@@ -48,6 +49,7 @@ class _HomePageState extends State<HomePage> {
   bool checkCreateClass = false;
   bool checkPreviewClassExcel = false;
   bool checkPreviewStudentExcel = false;
+  bool checkSemester = false;
   int totalLecturer = 0;
   int totalCourse = 0;
   int totalClass = 0;
@@ -62,6 +64,7 @@ class _HomePageState extends State<HomePage> {
   List<Semester> semesters = [];
   String dropdownvalue = '';
   int selectedIndex = 0;
+  int? selectedSemesterID;
   late Future<List<Semester>> _fetchSemester;
 
   void toggleDrawer() {
@@ -112,6 +115,7 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         semesters = value;
         dropdownvalue = semesters.first.semesterName ?? '';
+        selectedSemesterID = semesters.first.semesterID;
       });
     });
   }
@@ -154,6 +158,7 @@ class _HomePageState extends State<HomePage> {
                 checkLectuers = false;
                 checkStudents = false;
                 checkSettings = false;
+                checkSemester = false;
               });
             },
             child:
@@ -168,6 +173,7 @@ class _HomePageState extends State<HomePage> {
                 checkLectuers = false;
                 checkStudents = false;
                 checkSettings = false;
+                checkSemester = false;
               });
             },
             child: iconCollapseSideBar(
@@ -184,6 +190,7 @@ class _HomePageState extends State<HomePage> {
                 checkLectuers = true;
                 checkStudents = false;
                 checkSettings = false;
+                checkSemester = false;
               });
             },
             child: iconCollapseSideBar(
@@ -198,6 +205,7 @@ class _HomePageState extends State<HomePage> {
                 checkLectuers = false;
                 checkStudents = true;
                 checkSettings = false;
+                checkSemester = false;
               });
             },
             child: iconCollapseSideBar(
@@ -214,6 +222,7 @@ class _HomePageState extends State<HomePage> {
                 checkLectuers = false;
                 checkStudents = false;
                 checkSettings = true;
+                checkSemester = false;
               });
             },
             child: iconCollapseSideBar(
@@ -359,6 +368,7 @@ class _HomePageState extends State<HomePage> {
           checkCourse = false;
           checkPreviewClassExcel = false;
           checkPreviewStudentExcel = false;
+          checkSemester = false;
 
           if (title == 'Home') {
             checkHome = true;
@@ -376,6 +386,8 @@ class _HomePageState extends State<HomePage> {
             checkPreviewClassExcel = true;
           } else if (title == 'Excel Student') {
             checkPreviewStudentExcel = true;
+          } else if (title == 'Semesters') {
+            checkSemester = true;
           }
         });
       },
@@ -453,6 +465,8 @@ class _HomePageState extends State<HomePage> {
                 'Lectuers', const Icon(Icons.person_2_outlined), checkLectuers),
             itemHeader(
                 'Students', const Icon(Icons.person_2_outlined), checkStudents),
+            itemHeader('Semesters', const Icon(Icons.person_2_outlined),
+                checkSemester),
             const CustomText(
                 message: 'Excel',
                 fontSize: 12,
@@ -499,6 +513,8 @@ class _HomePageState extends State<HomePage> {
       return const PreviewExcel();
     } else if (checkPreviewStudentExcel) {
       return const PreviewStudentExcel();
+    } else if (checkSemester) {
+      return const SemesterPage();
     } else {
       return containerHome();
     }
@@ -783,6 +799,10 @@ class _HomePageState extends State<HomePage> {
                           setState(() {
                             dropdownvalue = newValue!;
                           });
+                          selectedSemesterID = semesters
+                              .firstWhere((semester) =>
+                                  semester.semesterName == newValue)
+                              .semesterID;
                         },
                         iconSize: 15,
                         menuMaxHeight: 150,
@@ -799,17 +819,14 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
                 const SizedBox(
-                  height: 5,
+                  height: 10,
                 ),
                 FutureBuilder(
-                  future: API(context).getClasses(page),
+                  future: API(context).getClasses(page, selectedSemesterID),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       if (snapshot.data != null) {
                         ClassData? classesData = snapshot.data;
-                        // Future.delayed(Duration.zero, () {
-                        //   classDataProvider.setAttendanceFormData(classes!);
-                        // });
                         return Column(
                           children: [
                             GridView.builder(
@@ -860,11 +877,14 @@ class _HomePageState extends State<HomePage> {
                       }
                     } else if (snapshot.hasError) {
                       return Center(child: Text('Error: ${snapshot.error}'));
-                    } else {
+                    } else if (snapshot.connectionState ==
+                        ConnectionState.waiting) {
                       return const Center(
                           child: CircularProgressIndicator(
                         value: 5,
                       ));
+                    } else {
+                      return const Center(child: Text('Data is not available'));
                     }
                     return const Center(child: Text('Data is not available'));
                   },

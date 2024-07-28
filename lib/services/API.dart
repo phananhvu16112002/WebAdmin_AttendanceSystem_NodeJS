@@ -797,8 +797,9 @@ class API {
   //   }
   // }
 
-  Future<ClassData?> getClasses(int page) async {
-    var URL = 'http://$baseURl:8080/api/admin/classes/page/$page';
+  Future<ClassData?> getClasses(int page, int? semesterID) async {
+    var URL =
+        'http://$baseURl:8080/api/admin/classes/page/$page?semester=$semesterID';
     var accessToken = await getAccessToken();
     var headers = {'authorization': accessToken};
     try {
@@ -831,6 +832,8 @@ class API {
           print('New Access Token is empty');
           return null;
         }
+      } else if (response.statusCode == 204) {
+        return ClassData(totalPage: 1, classes: []);
       } else {
         print('Failed to load data. Status code: ${response.statusCode}');
         return null;
@@ -1842,85 +1845,393 @@ class API {
     }
   }
 
-  // Future<List<CourseModel>?> uploadExcelCourses(Uint8List excelBytes) async {
-  //   var uri = Uri.parse('http://$baseURl:8080/api/admin/class/submit');
-  //   var accessToken = await getAccessToken();
-  //   try {
-  //     var request = http.MultipartRequest("POST", uri);
-  //     var multipartFile = http.MultipartFile.fromBytes(
-  //       'file',
-  //       excelBytes,
-  //       filename: 'excel_file.xlsx',
-  //     );
-  //     request.files.add(multipartFile);
-  //     request.headers['Authorization'] = accessToken;
-  //     var response = await request.send();
-  //     if (response.statusCode == 200) {
-  //       var responseBody = await response.stream.bytesToString();
-  //       List<CourseModel>? data = [];
-  //       if (responseBody.isNotEmpty) {
-  //         var jsonResponse = jsonDecode(responseBody);
-  //         if (jsonResponse.containsKey('data')) {
-  //           List courseList = jsonResponse['data'];
-  //           for (var courseData in courseList) {
-  //             try {
-  //               data.add(CourseModel.fromJson(courseData));
-  //             } catch (e) {
-  //               print('Error parsing student data: $e');
-  //             }
-  //           }
-  //         } else {
-  //           print('No courses data found in response');
-  //         }
-  //       } else {
-  //         print('Response body is empty');
-  //       }
-  //       return data;
-  //     } else if (response.statusCode == 498 || response.statusCode == 401) {
-  //       var refreshToken = await SecureStorage().readSecureData('refreshToken');
-  //       var newAccessToken = await refreshAccessToken(refreshToken);
-  //       if (newAccessToken.isNotEmpty) {
-  //         var retryRequest = http.MultipartRequest("POST", uri);
-  //         retryRequest.headers['Authorization'] = newAccessToken;
-  //         var retryMultipartFile = http.MultipartFile.fromBytes(
-  //           'file',
-  //           excelBytes,
-  //           filename: 'excel_file.xlsx',
-  //         );
-  //         retryRequest.files.add(retryMultipartFile);
+  Future<List<Semester>> createSemester(String semesterName,
+      String semesterDescription, String startDate, String endDate) async {
+    var URL = 'http://$baseURl:8080/api/admin/semester/submit'; //10.0.2.2
 
-  //         var retryResponse = await retryRequest.send();
-  //         if (retryResponse.statusCode == 200) {
-  //           var retryReponsebody = await retryResponse.stream.bytesToString();
-  //           List<CourseModel>? listCourses = [];
-  //           if (retryReponsebody.isNotEmpty) {
-  //             var jsonRetryResponse = jsonDecode(retryReponsebody);
-  //             if (jsonRetryResponse.containsKey('data')) {
-  //               List listData = jsonRetryResponse['data'];
-  //               for (var course in listData) {
-  //                 try {
-  //                   listCourses.add(CourseModel.fromJson(course));
-  //                 } catch (e) {
-  //                   print('Error parsing student data: $e');
-  //                 }
-  //               }
-  //             } else {
-  //               print('No student data found in response');
-  //             }
-  //           }
-  //           return listCourses;
-  //         }
-  //       } else {
-  //         print('Access Token is empty');
-  //       }
-  //     } else {
-  //       print('Non-200 response: ${response.statusCode}');
-  //       return null;
-  //     }
-  //   } catch (e) {
-  //     print('Error uploading file: $e');
-  //     return null;
-  //   }
-  //   return null;
-  // }
+    var accessToken = await getAccessToken();
+    try {
+      var request = {
+        'semesterName': semesterName,
+        'semesterDescription': semesterDescription,
+        'startDate': startDate,
+        'endDate': endDate,
+      };
+      var body = json.encode(request);
+      var headers = {
+        'authorization': accessToken,
+        'Content-type': 'application/json; charset=UTF-8',
+        'Accept': 'application/json',
+      };
+      final response =
+          await http.post(Uri.parse(URL), headers: headers, body: body);
+      if (response.statusCode == 200) {
+        dynamic responseData = jsonDecode(response.body);
+        List<Semester> data = [];
+
+        if (responseData is List) {
+          for (var temp in responseData) {
+            if (temp is Map<String, dynamic>) {
+              try {
+                data.add(Semester.fromJson(temp));
+              } catch (e) {
+                print('Error parsing data: $e');
+                return [];
+              }
+            } else {
+              print('Invalid data type: $temp');
+              return [];
+            }
+          }
+        } else if (responseData is Map<String, dynamic>) {
+          try {
+            data.add(Semester.fromJson(responseData));
+          } catch (e) {
+            print('Error parsing data: $e');
+            return [];
+          }
+        } else {
+          print('Unexpected data type: $responseData');
+          return [];
+        }
+        return data;
+      } else if (response.statusCode == 498 || response.statusCode == 401) {
+        var refreshToken = await SecureStorage().readSecureData('refreshToken');
+        var newAccessToken = await refreshAccessToken(refreshToken);
+        if (newAccessToken.isNotEmpty) {
+          headers['authorization'] = newAccessToken;
+          final retryResponse =
+              await http.post(Uri.parse(URL), headers: headers, body: body);
+          if (retryResponse.statusCode == 200) {
+            dynamic responseData = jsonDecode(retryResponse.body);
+            List<Semester> data = [];
+
+            if (responseData is List) {
+              for (var temp in responseData) {
+                if (temp is Map<String, dynamic>) {
+                  try {
+                    data.add(Semester.fromJson(temp));
+                  } catch (e) {
+                    print('Error parsing data: $e');
+                    return [];
+                  }
+                } else {
+                  print('Invalid data type: $temp');
+                  return [];
+                }
+              }
+            } else if (responseData is Map<String, dynamic>) {
+              try {
+                data.add(Semester.fromJson(responseData));
+              } catch (e) {
+                print('Error parsing data: $e');
+                return [];
+              }
+            } else {
+              print('Unexpected data type: $responseData');
+              return [];
+            }
+
+            // print('Data $data');
+            return data;
+          } else {
+            return [];
+          }
+        } else {
+          print('New Access Token is empty');
+          return [];
+        }
+      } else {
+        print(
+            'Failed to load reports data. Status code: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('Error: $e');
+      return [];
+    }
+  }
+
+  Future<List<Semester>> editSemester(int semesterId, String semesterName,
+      String semesterDescription, String startDate, String endDate) async {
+    var URL = 'http://$baseURl:8080/api/admin/semester/$semesterId'; //10.0.2.2
+
+    var accessToken = await getAccessToken();
+    try {
+      var request = {
+        'semesterName': semesterName,
+        'semesterDescription': semesterDescription,
+        'startDate': startDate,
+        'endDate': endDate,
+      };
+      var body = json.encode(request);
+      var headers = {
+        'authorization': accessToken,
+        'Content-type': 'application/json; charset=UTF-8',
+        'Accept': 'application/json',
+      };
+      final response =
+          await http.put(Uri.parse(URL), headers: headers, body: body);
+      if (response.statusCode == 200) {
+        dynamic responseData = jsonDecode(response.body);
+        List<Semester> data = [];
+
+        if (responseData is List) {
+          for (var temp in responseData) {
+            if (temp is Map<String, dynamic>) {
+              try {
+                data.add(Semester.fromJson(temp));
+              } catch (e) {
+                print('Error parsing data: $e');
+                return [];
+              }
+            } else {
+              print('Invalid data type: $temp');
+              return [];
+            }
+          }
+        } else if (responseData is Map<String, dynamic>) {
+          try {
+            data.add(Semester.fromJson(responseData));
+          } catch (e) {
+            print('Error parsing data: $e');
+            return [];
+          }
+        } else {
+          print('Unexpected data type: $responseData');
+          return [];
+        }
+        return data;
+      } else if (response.statusCode == 498 || response.statusCode == 401) {
+        var refreshToken = await SecureStorage().readSecureData('refreshToken');
+        var newAccessToken = await refreshAccessToken(refreshToken);
+        if (newAccessToken.isNotEmpty) {
+          headers['authorization'] = newAccessToken;
+          final retryResponse =
+              await http.put(Uri.parse(URL), headers: headers, body: body);
+          if (retryResponse.statusCode == 200) {
+            dynamic responseData = jsonDecode(retryResponse.body);
+            List<Semester> data = [];
+
+            if (responseData is List) {
+              for (var temp in responseData) {
+                if (temp is Map<String, dynamic>) {
+                  try {
+                    data.add(Semester.fromJson(temp));
+                  } catch (e) {
+                    print('Error parsing data: $e');
+                    return [];
+                  }
+                } else {
+                  print('Invalid data type: $temp');
+                  return [];
+                }
+              }
+            } else if (responseData is Map<String, dynamic>) {
+              try {
+                data.add(Semester.fromJson(responseData));
+              } catch (e) {
+                print('Error parsing data: $e');
+                return [];
+              }
+            } else {
+              print('Unexpected data type: $responseData');
+              return [];
+            }
+
+            // print('Data $data');
+            return data;
+          } else {
+            return [];
+          }
+        } else {
+          print('New Access Token is empty');
+          return [];
+        }
+      } else {
+        print(
+            'Failed to load reports data. Status code: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('Error: $e');
+      return [];
+    }
+  }
+
+  Future<String?> deleteSemester(
+    int semesterID,
+  ) async {
+    final url = 'http://$baseURl:8080/api/admin/semester/$semesterID';
+    var accessToken = await getAccessToken();
+    var headers = {
+      'authorization': accessToken,
+    };
+    try {
+      final response = await http.delete(Uri.parse(url), headers: headers);
+      // print(jsonDecode(response.body));
+      if (response.statusCode == 200) {
+        dynamic responseData = jsonDecode(response.body);
+        String message = responseData['message'];
+        print('Message: $message');
+        return message;
+      } else if (response.statusCode == 498 || response.statusCode == 401) {
+        var refreshToken = await SecureStorage().readSecureData('refreshToken');
+        var newAccessToken = await refreshAccessToken(refreshToken);
+        if (newAccessToken.isNotEmpty) {
+          headers['authorization'] = newAccessToken;
+          final retryResponse =
+              await http.delete(Uri.parse(url), headers: headers);
+          if (retryResponse.statusCode == 200) {
+            // print('-- RetryResponse.body ${retryResponse.body}');
+            // print('-- Retry JsonDecode:${jsonDecode(retryResponse.body)}');
+            dynamic responseData = jsonDecode(retryResponse.body);
+            String message = responseData['message'];
+            print('Message: $message');
+            return message;
+          } else {
+            dynamic responseData = jsonDecode(retryResponse.body);
+            String message = responseData['message'];
+            return message;
+          }
+        } else {
+          print('New Access Token is empty');
+          return '';
+        }
+      } else {
+        print('Failed to load data. Status code: ${response.statusCode}');
+        return '';
+      }
+    } catch (e) {
+      print('Error: $e');
+      return '';
+    }
+  }
+
+  Future<String?> uploadExcelFullStudent(
+      Uint8List excelBytes, int semesterID) async {
+    var uri = Uri.parse('http://$baseURl:8080/api/admin/studentclass/submit');
+    print('semes ${semesterID.toString()}');
+    try {
+      var request = http.MultipartRequest("POST", uri);
+      var multipartFile = http.MultipartFile.fromBytes(
+        'file',
+        excelBytes,
+        filename: 'excel_file.xlsx',
+      );
+      request.fields['semesterID'] = semesterID.toString();
+      print('405 ${request.fields['semesterID']}');
+
+      request.files.add(multipartFile);
+
+      // Kiểm tra accessToken
+      var accessToken = await getAccessToken();
+      request.headers['Authorization'] = accessToken;
+
+      var response = await request.send();
+      if (response.statusCode == 200) {
+        return 'OK';
+      } else if (response.statusCode == 498 || response.statusCode == 401) {
+        var refreshToken = await SecureStorage().readSecureData('refreshToken');
+        var newAccessToken = await refreshAccessToken(refreshToken);
+        if (newAccessToken.isNotEmpty) {
+          var retryRequest = http.MultipartRequest("POST", uri);
+          retryRequest.headers['Authorization'] = newAccessToken;
+
+          retryRequest.fields['semesterID'] = semesterID.toString();
+
+          var retryMultipartFile = http.MultipartFile.fromBytes(
+            'file',
+            excelBytes,
+            filename: 'excel_file.xlsx',
+          );
+          retryRequest.files.add(retryMultipartFile);
+
+          var retryResponse = await retryRequest.send();
+          if (retryResponse.statusCode == 200) {
+            return 'OK';
+          } else {
+            dynamic data =
+                jsonDecode(await retryResponse.stream.bytesToString());
+            String message = data['message'];
+            print('Failed: $message');
+            return null;
+          }
+        } else {
+          print('Access Token is empty');
+          return null;
+        }
+      } else {
+        dynamic data = jsonDecode(await response.stream.bytesToString());
+        String message = data['message'];
+        print('Failed: $message');
+        return null;
+      }
+    } catch (e) {
+      print('Error uploading file: $e');
+      return null;
+    }
+  }
+
+  Future<String?> uploadClassByTeacher(
+      Uint8List excelBytes, int semesterID) async {
+    var uri = Uri.parse('http://$baseURl:8080/api/admin/class/submit');
+    try {
+      var request = http.MultipartRequest("POST", uri);
+      var multipartFile = http.MultipartFile.fromBytes(
+        'file',
+        excelBytes,
+        filename: 'excel_file.xlsx',
+      );
+      request.fields['semesterID'] = semesterID.toString();
+      request.files.add(multipartFile);
+
+      // Kiểm tra accessToken
+      var accessToken = await getAccessToken();
+      request.headers['Authorization'] = accessToken;
+
+      var response = await request.send();
+      if (response.statusCode == 200) {
+        return 'OK';
+      } else if (response.statusCode == 498 || response.statusCode == 401) {
+        var refreshToken = await SecureStorage().readSecureData('refreshToken');
+        var newAccessToken = await refreshAccessToken(refreshToken);
+        if (newAccessToken.isNotEmpty) {
+          var retryRequest = http.MultipartRequest("POST", uri);
+          retryRequest.headers['Authorization'] = newAccessToken;
+
+          retryRequest.fields['semesterID'] = semesterID.toString();
+
+          var retryMultipartFile = http.MultipartFile.fromBytes(
+            'file',
+            excelBytes,
+            filename: 'excel_file.xlsx',
+          );
+          retryRequest.files.add(retryMultipartFile);
+
+          var retryResponse = await retryRequest.send();
+          if (retryResponse.statusCode == 200) {
+            return 'OK';
+          } else {
+            dynamic data =
+                jsonDecode(await retryResponse.stream.bytesToString());
+            String message = data['message'];
+            print('Failed: $message');
+            return null;
+          }
+        } else {
+          print('Access Token is empty');
+          return null;
+        }
+      } else {
+        dynamic data = jsonDecode(await response.stream.bytesToString());
+        String message = data['message'];
+        print('Failed: $message');
+        return null;
+      }
+    } catch (e) {
+      print('Error uploading file: $e');
+      return null;
+    }
+  }
 }

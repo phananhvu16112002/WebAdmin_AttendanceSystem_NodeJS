@@ -28,6 +28,7 @@ class _SignInPageState extends State<SignInPage> {
     // TODO: implement initState
     super.initState();
     _progressDialog = ProgressDialog(context,
+    isDismissible: false,
         customBody: Container(
           width: 200,
           height: 150,

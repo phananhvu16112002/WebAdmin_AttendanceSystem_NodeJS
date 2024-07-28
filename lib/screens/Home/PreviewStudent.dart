@@ -3,6 +3,8 @@ import 'dart:typed_data';
 
 import 'package:admin_attendancesystem_nodejs/common/base/CustomText.dart';
 import 'package:admin_attendancesystem_nodejs/common/colors/color.dart';
+import 'package:admin_attendancesystem_nodejs/models/semester.dart';
+import 'package:admin_attendancesystem_nodejs/services/API.dart';
 import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:file_saver/file_saver.dart';
@@ -26,6 +28,11 @@ class _PreviewStudentExcelState extends State<PreviewStudentExcel> {
   int _maxColumns = 12;
   int _currentPage = 0;
   final int _rowsPerPage = 20;
+  String dropdownvalue = '';
+  List<Semester> semesters = [];
+  int? selectedSemesterID; 
+
+  late Future<List<Semester>> _fetchSemester;
 
   int getCurrentPage() {
     return _currentPage + 1;
@@ -167,10 +174,62 @@ class _PreviewStudentExcelState extends State<PreviewStudentExcel> {
     }
 
     final List<int> excelBytes = excel.encode()!;
-    const String fileName = 'edited_data.xlsx';
+    // const String fileName = 'edited_data.xlsx';
 
-    await FileSaver.instance
-        .saveFile(bytes: Uint8List.fromList(excelBytes), name: fileName);
+    // await FileSaver.instance
+    //     .saveFile(bytes: Uint8List.fromList(excelBytes), name: fileName);
+    String? result = await API(context)
+        .uploadExcelFullStudent(Uint8List.fromList(excelBytes), selectedSemesterID!);
+
+    if (result != null && result.isNotEmpty) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Upload Excel"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("Upload file excel to server successfully"),
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text("OK"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Upload Excel"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("Upload file excel to server failed"),
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text("OK"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 
   void _clearExcelData() {
@@ -211,6 +270,25 @@ class _PreviewStudentExcelState extends State<PreviewStudentExcel> {
   }
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    fetchSemester();
+  }
+
+  void fetchSemester() async {
+    _fetchSemester = API(context).getSemester();
+    _fetchSemester.then((value) {
+      setState(() {
+        semesters = value;
+        dropdownvalue = semesters.first.semesterName ?? '';
+        selectedSemesterID = semesters.first.semesterID;
+
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       width: MediaQuery.of(context).size.width - 250,
@@ -224,6 +302,46 @@ class _PreviewStudentExcelState extends State<PreviewStudentExcel> {
             children: [
               const SizedBox(
                 height: 10,
+              ),
+              Row(
+                children: [
+                  CustomText(
+                      message: 'Select semester',
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.primaryText),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.white),
+                    child: DropdownButton<String>(
+                      focusColor: Colors.transparent,
+                      underline: Container(),
+                      value: dropdownvalue,
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          dropdownvalue = newValue!;
+                          selectedSemesterID = semesters.firstWhere((semester) =>
+                                semester.semesterName == newValue).semesterID;
+                        });
+                      },
+                      iconSize: 15,
+                      menuMaxHeight: 150,
+                      style: TextStyle(fontSize: 15),
+                      items: semesters
+                          .map<DropdownMenuItem<String>>((Semester value) {
+                        return DropdownMenuItem<String>(
+                          value: value.semesterName,
+                          child: Text(value.semesterName ?? ''),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
               ),
               const CustomText(
                   message: 'Upload Class Excel',
