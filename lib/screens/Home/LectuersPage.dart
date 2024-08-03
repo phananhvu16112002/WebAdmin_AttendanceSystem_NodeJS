@@ -101,7 +101,7 @@ class _LecturerPageState extends State<LecturerPage> {
       _progressDialog.show();
       var response = await API(context).uploadExcelTeachers(_excelBytes!);
       print('response: $response');
-      if (response!.isNotEmpty) {
+      if (response != null) {
         await _progressDialog.hide();
         if (mounted) {
           await showDialog(

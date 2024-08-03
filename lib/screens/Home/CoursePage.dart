@@ -382,8 +382,8 @@ class _CoursePageState extends State<CoursePage> {
         1: FixedColumnWidth(120),
         2: IntrinsicColumnWidth(),
         3: FlexColumnWidth(1),
-        4: FlexColumnWidth(1),
-        5: FlexColumnWidth(1),
+        // 4: FlexColumnWidth(1),
+        // 5: FlexColumnWidth(1),
         6: FixedColumnWidth(70),
         7: FixedColumnWidth(70),
       },
@@ -443,32 +443,32 @@ class _CoursePageState extends State<CoursePage> {
                 ),
               ),
             ),
-            TableCell(
-              child: Container(
-                padding: const EdgeInsets.all(5),
-                color: const Color(0xff1770f0).withOpacity(0.21),
-                child: const Center(
-                  child: CustomText(
-                      message: 'Total Weeks',
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                ),
-              ),
-            ),
-            TableCell(
-              child: Container(
-                padding: const EdgeInsets.all(5),
-                color: const Color(0xff1770f0).withOpacity(0.21),
-                child: const Center(
-                  child: CustomText(
-                      message: 'Required Weeks',
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                ),
-              ),
-            ),
+            // TableCell(
+            //   child: Container(
+            //     padding: const EdgeInsets.all(5),
+            //     color: const Color(0xff1770f0).withOpacity(0.21),
+            //     child: const Center(
+            //       child: CustomText(
+            //           message: 'Total Weeks',
+            //           fontSize: 12,
+            //           fontWeight: FontWeight.bold,
+            //           color: Colors.black),
+            //     ),
+            //   ),
+            // ),
+            // TableCell(
+            //   child: Container(
+            //     padding: const EdgeInsets.all(5),
+            //     color: const Color(0xff1770f0).withOpacity(0.21),
+            //     child: const Center(
+            //       child: CustomText(
+            //           message: 'Required Weeks',
+            //           fontSize: 12,
+            //           fontWeight: FontWeight.bold,
+            //           color: Colors.black),
+            //     ),
+            //   ),
+            // ),
             TableCell(
               child: Container(
                 padding: const EdgeInsets.all(5),
@@ -590,45 +590,45 @@ class _CoursePageState extends State<CoursePage> {
                   ),
                 ),
               ),
-              InkWell(
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (builder) => DetailCourseScreen(
-                              courseModel: studentAttendance[i])));
-                },
-                child: TableCell(
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
-                    color: Colors.white,
-                    child: Center(
-                      child: CustomText(
-                          message: '${studentAttendance[i].totalWeeks}',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black),
-                    ),
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: () {},
-                child: TableCell(
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
-                    color: Colors.white,
-                    child: Center(
-                      child: Text('${studentAttendance[i].requiredWeeks}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black,
-                          )),
-                    ),
-                  ),
-                ),
-              ),
+              // InkWell(
+              //   onTap: () {
+              //     Navigator.push(
+              //         context,
+              //         MaterialPageRoute(
+              //             builder: (builder) => DetailCourseScreen(
+              //                 courseModel: studentAttendance[i])));
+              //   },
+              //   child: TableCell(
+              //     child: Container(
+              //       padding: const EdgeInsets.all(5),
+              //       color: Colors.white,
+              //       child: Center(
+              //         child: CustomText(
+              //             message: '${studentAttendance[i].totalWeeks}',
+              //             fontSize: 12,
+              //             fontWeight: FontWeight.w500,
+              //             color: Colors.black),
+              //       ),
+              //     ),
+              //   ),
+              // ),
+              // InkWell(
+              //   onTap: () {},
+              //   child: TableCell(
+              //     child: Container(
+              //       padding: const EdgeInsets.all(5),
+              //       color: Colors.white,
+              //       child: Center(
+              //         child: Text('${studentAttendance[i].requiredWeeks}',
+              //             style: const TextStyle(
+              //               fontSize: 12,
+              //               fontWeight: FontWeight.w500,
+              //               color: Colors.black,
+              //             )),
+              //       ),
+              //     ),
+              //   ),
+              // ),
               InkWell(
                 onTap: () {
                   editCourse(

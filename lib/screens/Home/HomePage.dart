@@ -78,8 +78,8 @@ class _HomePageState extends State<HomePage> {
     // TODO: implement initState
     super.initState();
     _loadToken();
-    fetchData();
-    fetchSemester();
+    // fetchSemester();
+    // fetchData();
   }
 
   Future<void> _loadToken() async {
@@ -94,29 +94,36 @@ class _HomePageState extends State<HomePage> {
         context,
         MaterialPageRoute(builder: (context) => const WelcomePage()),
       );
+    } else {
+      fetchSemester();
+      fetchData();
     }
   }
 
   void fetchData() async {
     _fetchTotalModel = API(context).getTotalHomePage();
     _fetchTotalModel.then((value) {
-      setState(() {
-        totalLecturer = value?.totalTeachers ?? 0;
-        totalStudent = value?.totalStudents ?? 0;
-        totalClass = value?.totalClasses ?? 0;
-        totalCourse = value?.totalCourses ?? 0;
-      });
+      if (value != null) {
+        setState(() {
+          totalLecturer = value.totalTeachers ?? 0;
+          totalStudent = value.totalStudents ?? 0;
+          totalClass = value.totalClasses ?? 0;
+          totalCourse = value.totalCourses ?? 0;
+        });
+      }
     });
   }
 
   void fetchSemester() async {
     _fetchSemester = API(context).getSemester();
     _fetchSemester.then((value) {
-      setState(() {
-        semesters = value;
-        dropdownvalue = semesters.first.semesterName ?? '';
-        selectedSemesterID = semesters.first.semesterID;
-      });
+      if (value.isNotEmpty) {
+        setState(() {
+          semesters = value;
+          dropdownvalue = semesters.first.semesterName ?? '';
+          selectedSemesterID = semesters.first.semesterID;
+        });
+      }
     });
   }
 
