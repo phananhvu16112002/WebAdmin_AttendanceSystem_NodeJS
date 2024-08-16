@@ -7,9 +7,11 @@ import 'package:admin_attendancesystem_nodejs/screens/Home/HomePage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/PreviewExcel.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/PreviewStudent.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart' ; 
 import 'package:provider/provider.dart';
 
-void main() {
+Future main() async {
+  await dotenv.load();
   runApp(
     MultiProvider(
       providers: [

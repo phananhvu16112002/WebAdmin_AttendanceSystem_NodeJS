@@ -4,7 +4,7 @@ import 'package:admin_attendancesystem_nodejs/utils/constants.dart';
 import 'package:http/http.dart' as http;
 
 class Authentication{
-  String baseURl = Constants.baseUrl;
+  String? baseURl = Constants.baseUrl;
   Future<String> login(String email, String password) async {
     var URL = 'http://$baseURl:8080/api/admin/login';
     var request = {'email': email, 'password': password};

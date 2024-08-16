@@ -17,6 +17,9 @@ class _WelcomePageState extends State<WelcomePage> {
   @override
   Widget build(BuildContext context) {
     // html.window.history.pushState({}, 'Welcome', 'Welcome');
+    print('Date ${DateTime.now().toLocal().toString()}');
+    print('Date 2 ${DateTime.now()}');
+
 
     return Scaffold(
       backgroundColor: const Color(0xffced9e9),
