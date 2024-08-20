@@ -102,8 +102,7 @@ class _CoursePageState extends State<CoursePage> {
     try {
       _progressDialog.show();
       var response = await API(context).uploadExcelCourses(_excelBytes!);
-      print('response: $response');
-      if (response!.isNotEmpty) {
+      if (response != null) {
         await _progressDialog.hide();
         if (mounted) {
           await showDialog(
@@ -140,7 +139,6 @@ class _CoursePageState extends State<CoursePage> {
           );
         }
 
-        print('ok');
       } else {
         await _progressDialog.hide();
         if (mounted) {

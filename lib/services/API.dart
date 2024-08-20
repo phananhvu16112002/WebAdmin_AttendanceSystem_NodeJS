@@ -34,7 +34,7 @@ class API {
   }
 
   Future<String> refreshAccessToken(String refreshToken) async {
-    var url = 'http://$baseURl:8080/api/token/refreshAccessToken'; // 10.0.2.2
+    var url = '$baseURl/api/token/refreshAccessToken'; // 10.0.2.2
     var headers = {'authorization': refreshToken};
 
     try {
@@ -107,7 +107,7 @@ class API {
   }
 
   Future<List<TeacherPage>?> uploadExcelTeachers(Uint8List excelBytes) async {
-    var uri = Uri.parse('http://$baseURl:8080/api/admin/submit/teachers');
+    var uri = Uri.parse('$baseURl/api/admin/submit/teachers');
     var accessToken = await getAccessToken();
     try {
       var request = http.MultipartRequest("POST", uri);
@@ -190,7 +190,7 @@ class API {
   }
 
   Future<List<Student>?> uploadExcelStudent(Uint8List excelBytes) async {
-    var uri = Uri.parse('http://$baseURl:8080/api/admin/submit/students');
+    var uri = Uri.parse('$baseURl/api/admin/submit/students');
     var accessToken = await getAccessToken();
     try {
       var request = http.MultipartRequest("POST", uri);
@@ -273,7 +273,7 @@ class API {
   }
 
   Future<List<CourseModel>?> uploadExcelCourses(Uint8List excelBytes) async {
-    var uri = Uri.parse('http://$baseURl:8080/api/admin/submit/courses');
+    var uri = Uri.parse('$baseURl/api/admin/submit/courses');
     var accessToken = await getAccessToken();
     try {
       var request = http.MultipartRequest("POST", uri);
@@ -365,7 +365,7 @@ class API {
       String classType,
       String group,
       String subGroup) async {
-    var uri = Uri.parse('http://$baseURl:8080/api/admin/submit/classes');
+    var uri = Uri.parse('$baseURl/api/admin/submit/classes');
 
     try {
       var request = http.MultipartRequest("POST", uri);
@@ -444,7 +444,7 @@ class API {
   }
 
   Future<List<Student>> getStudents() async {
-    var URL = 'http://$baseURl:8080/api/admin/students'; //10.0.2.2
+    var URL = '$baseURl/api/admin/students'; //10.0.2.2
 
     var accessToken = await getAccessToken();
     var headers = {'authorization': accessToken};
@@ -533,7 +533,7 @@ class API {
   }
 
   Future<List<TeacherPage>> getTeachers() async {
-    var URL = 'http://$baseURl:8080/api/admin/teachers'; //10.0.2.2
+    var URL = '$baseURl/api/admin/teachers'; //10.0.2.2
 
     var accessToken = await getAccessToken();
     var headers = {'authorization': accessToken};
@@ -622,7 +622,7 @@ class API {
   }
 
   Future<List<CourseModel>> getCourses() async {
-    var URL = 'http://$baseURl:8080/api/admin/courses'; //10.0.2.2
+    var URL = '$baseURl/api/admin/courses'; //10.0.2.2
 
     var accessToken = await getAccessToken();
     var headers = {'authorization': accessToken};
@@ -711,7 +711,7 @@ class API {
   }
 
   // Future<List<ClassModel>> getClasses(int page) async {
-  //   var URL = 'http://$baseURl:8080/api/admin/classes/page/$page'; //10.0.2.2
+  //   var URL = '$baseURl/api/admin/classes/page/$page'; //10.0.2.2
 
   //   var accessToken = await getAccessToken();
   //   var headers = {'authorization': accessToken};
@@ -799,7 +799,7 @@ class API {
 
   Future<ClassData?> getClasses(int page, int? semesterID) async {
     var URL =
-        'http://$baseURl:8080/api/admin/classes/page/$page?semester=$semesterID';
+        '$baseURl/api/admin/classes/page/$page?semester=$semesterID';
     var accessToken = await getAccessToken();
     var headers = {'authorization': accessToken};
     try {
@@ -845,7 +845,7 @@ class API {
   }
 
   Future<TotalModel?> getTotalHomePage() async {
-    var URL = 'http://$baseURl:8080/api/admin/home';
+    var URL = '$baseURl/api/admin/home';
     var accessToken = await getAccessToken();
     var headers = {'authorization': accessToken};
     try {
@@ -889,7 +889,7 @@ class API {
 
   Future<TeacherPage?> createNewLecturer(
       String lecturerID, String lecturerName, String lecturerEmail) async {
-    var url = 'http://$baseURl:8080/api/admin/submit/teacher';
+    var url = '$baseURl/api/admin/submit/teacher';
     var accessToken = await getAccessToken();
     var request = {
       'teacherID': lecturerID,
@@ -947,7 +947,7 @@ class API {
     String teacherID,
     String teacherName,
   ) async {
-    final url = 'http://$baseURl:8080/api/admin/edit/teacher/$teacherID';
+    final url = '$baseURl/api/admin/edit/teacher/$teacherID';
     var accessToken = await getAccessToken();
     var request = {
       'teacherName': teacherName,
@@ -1004,7 +1004,7 @@ class API {
   Future<bool?> deleteLecturer(
     String teacherID,
   ) async {
-    final url = 'http://$baseURl:8080/api/admin/teacher/$teacherID';
+    final url = '$baseURl/api/admin/teacher/$teacherID';
     var accessToken = await getAccessToken();
     var headers = {
       'authorization': accessToken,
@@ -1050,7 +1050,7 @@ class API {
 
   Future<Student?> createNewStudent(
       String studentID, String studentName, String studentEmail) async {
-    var url = 'http://$baseURl:8080/api/admin/submit/student';
+    var url = '$baseURl/api/admin/submit/student';
     var accessToken = await getAccessToken();
     var request = {
       'studentID': studentID,
@@ -1108,7 +1108,7 @@ class API {
     String studentID,
     String studentName,
   ) async {
-    final url = 'http://$baseURl:8080/api/admin/edit/student/$studentID';
+    final url = '$baseURl/api/admin/edit/student/$studentID';
     var accessToken = await getAccessToken();
     var request = {
       'studentName': studentName,
@@ -1160,7 +1160,7 @@ class API {
   Future<bool?> deleteStudent(
     String studentID,
   ) async {
-    final url = 'http://$baseURl:8080/api/admin/student/$studentID';
+    final url = '$baseURl/api/admin/student/$studentID';
     var accessToken = await getAccessToken();
     var headers = {
       'authorization': accessToken,
@@ -1206,7 +1206,7 @@ class API {
 
   Future<CourseModel?> createNewCourse(String courseID, String courseName,
       int totalWeeks, int requiredWeeks, int credit) async {
-    var url = 'http://$baseURl:8080/api/admin/submit/course';
+    var url = '$baseURl/api/admin/submit/course';
     var accessToken = await getAccessToken();
     var request = {
       'courseID': courseID,
@@ -1264,7 +1264,7 @@ class API {
 
   Future<bool?> updateCourse(String courseID, String courseName, int totalWeeks,
       int requiredWeeks, int credit) async {
-    final url = 'http://$baseURl:8080/api/admin/edit/course/$courseID';
+    final url = '$baseURl/api/admin/edit/course/$courseID';
     var accessToken = await getAccessToken();
     var request = {
       'courseName': courseName,
@@ -1321,7 +1321,7 @@ class API {
   Future<bool?> deleteCourse(
     String courseID,
   ) async {
-    final url = 'http://$baseURl:8080/api/admin/course/$courseID';
+    final url = '$baseURl/api/admin/course/$courseID';
     var accessToken = await getAccessToken();
     var headers = {
       'authorization': accessToken,
@@ -1366,7 +1366,7 @@ class API {
   }
 
   Future<List<StudentDetail>> getStudentsInClass(String classID) async {
-    var URL = 'http://$baseURl:8080/api/admin/classes/$classID'; //10.0.2.2
+    var URL = '$baseURl/api/admin/classes/$classID'; //10.0.2.2
 
     var accessToken = await getAccessToken();
     var headers = {'authorization': accessToken};
@@ -1456,7 +1456,7 @@ class API {
 
   Future<AddStudentResponse?> createNewStudentInsideClass(
       String studentID, String classID) async {
-    var url = 'http://$baseURl:8080/api/admin/submit/studentclass';
+    var url = '$baseURl/api/admin/submit/studentclass';
     var accessToken = await getAccessToken();
     var request = {
       'studentID': studentID,
@@ -1511,7 +1511,7 @@ class API {
     String studentID,
   ) async {
     final url =
-        'http://$baseURl:8080/api/admin/class/$classID/student/$studentID';
+        '$baseURl/api/admin/class/$classID/student/$studentID';
     var accessToken = await getAccessToken();
     var headers = {
       'authorization': accessToken,
@@ -1557,7 +1557,7 @@ class API {
 
   Future<ClassData?> getClassesInsideCourse(String courseID, int page) async {
     var URL =
-        'http://$baseURl:8080/api/admin/courses/$courseID/classes/page/$page';
+        '$baseURl/api/admin/courses/$courseID/classes/page/$page';
     var accessToken = await getAccessToken();
     var headers = {'authorization': accessToken};
     try {
@@ -1603,7 +1603,7 @@ class API {
   Future<UploadStudentsResponse?> uploadExcelStudentInsideClass(
       Uint8List excelBytes, String classID) async {
     var uri = Uri.parse(
-        'http://$baseURl:8080/api/admin/classes/$classID/uploadstudents');
+        '$baseURl/api/admin/classes/$classID/uploadstudents');
     var accessToken = await getAccessToken();
     try {
       var request = http.MultipartRequest("PUT", uri);
@@ -1665,7 +1665,7 @@ class API {
   }
 
   Future<ProgressModel?> getDataChart(String classID) async {
-    var URL = 'http://$baseURl:8080/api/admin/classes/$classID/stats';
+    var URL = '$baseURl/api/admin/classes/$classID/stats';
     var accessToken = await getAccessToken();
     var headers = {'authorization': accessToken};
     try {
@@ -1710,7 +1710,7 @@ class API {
   Future<String?> deleteClass(
     String classID,
   ) async {
-    final url = 'http://$baseURl:8080/api/admin/class/$classID';
+    final url = '$baseURl/api/admin/class/$classID';
     var accessToken = await getAccessToken();
     var headers = {
       'authorization': accessToken,
@@ -1757,7 +1757,7 @@ class API {
   }
 
   Future<List<Semester>> getSemester() async {
-    var URL = 'http://$baseURl:8080/api/admin/semester'; //10.0.2.2
+    var URL = '$baseURl/api/admin/semester'; //10.0.2.2
 
     var accessToken = await getAccessToken();
     var headers = {'authorization': accessToken};
@@ -1847,7 +1847,7 @@ class API {
 
   Future<List<Semester>> createSemester(String semesterName,
       String semesterDescription, String startDate, String endDate) async {
-    var URL = 'http://$baseURl:8080/api/admin/semester/submit'; //10.0.2.2
+    var URL = '$baseURl/api/admin/semester/submit'; //10.0.2.2
 
     var accessToken = await getAccessToken();
     try {
@@ -1954,7 +1954,7 @@ class API {
 
   Future<List<Semester>> editSemester(int semesterId, String semesterName,
       String semesterDescription, String startDate, String endDate) async {
-    var URL = 'http://$baseURl:8080/api/admin/semester/$semesterId'; //10.0.2.2
+    var URL = '$baseURl/api/admin/semester/$semesterId'; //10.0.2.2
 
     var accessToken = await getAccessToken();
     try {
@@ -2062,7 +2062,7 @@ class API {
   Future<String?> deleteSemester(
     int semesterID,
   ) async {
-    final url = 'http://$baseURl:8080/api/admin/semester/$semesterID';
+    final url = '$baseURl/api/admin/semester/$semesterID';
     var accessToken = await getAccessToken();
     var headers = {
       'authorization': accessToken,
@@ -2110,7 +2110,7 @@ class API {
 
   Future<String?> uploadExcelFullStudent(
       Uint8List excelBytes, int semesterID) async {
-    var uri = Uri.parse('http://$baseURl:8080/api/admin/studentclass/submit');
+    var uri = Uri.parse('$baseURl/api/admin/studentclass/submit');
     print('semes ${semesterID.toString()}');
     try {
       var request = http.MultipartRequest("POST", uri);
@@ -2175,7 +2175,7 @@ class API {
 
   Future<String?> uploadClassByTeacher(
       Uint8List excelBytes, int semesterID) async {
-    var uri = Uri.parse('http://$baseURl:8080/api/admin/class/submit');
+    var uri = Uri.parse('$baseURl/api/admin/class/submit');
     try {
       var request = http.MultipartRequest("POST", uri);
       var multipartFile = http.MultipartFile.fromBytes(

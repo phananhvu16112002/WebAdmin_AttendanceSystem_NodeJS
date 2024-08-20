@@ -226,7 +226,7 @@ class _SemesterPageState extends State<SemesterPage> {
               height: 10,
             ),
             const CustomText(
-                message: 'Information Courses',
+                message: 'Information Semesters',
                 fontSize: 25,
                 fontWeight: FontWeight.w800,
                 color: AppColors.primaryText),
