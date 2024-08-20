@@ -484,112 +484,84 @@ class _SemesterPageState extends State<SemesterPage> {
         for (int i = startIndex; i < endIndex; i++)
           TableRow(
             children: [
-              InkWell(
-                onTap: () {
-                  // Navigator.push(
-                  //     context,
-                  //     MaterialPageRoute(
-                  //         builder: (builder) => DetailCourseScreen(
-                  //             courseModel: semester[i])));
-                },
-                child: TableCell(
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
-                    color: Colors.white,
-                    child: Center(
-                      child: CustomText(
-                          message: '${semester[i].semesterID}',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black),
-                    ),
+              TableCell(
+                child: Container(
+                  padding: const EdgeInsets.all(5),
+                  color: Colors.white,
+                  child: Center(
+                    child: CustomText(
+                        message: '${semester[i].semesterID}',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black),
                   ),
                 ),
               ),
-              InkWell(
-                onTap: () {
-                  // Navigator.push(
-                  //     context,
-                  //     MaterialPageRoute(
-                  //         builder: (builder) => DetailCourseScreen(
-                  //               courseModel: semester[i],
-                  //             )));
-                },
-                child: TableCell(
-                  child: Container(
-                    color: Colors.white,
-                    padding: const EdgeInsets.all(5),
-                    child: Center(
-                      child: CustomText(
-                          message: semester[i].semesterName.toString(),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black),
-                    ),
+              TableCell(
+                child: Container(
+                  color: Colors.white,
+                  padding: const EdgeInsets.all(5),
+                  child: Center(
+                    child: CustomText(
+                        message: semester[i].semesterName.toString(),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black),
                   ),
                 ),
               ),
-              InkWell(
-                onTap: () {},
-                child: TableCell(
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
-                    color: Colors.white,
-                    child: Center(
-                      child: CustomText(
-                          message: semester[i].semesterDescription ?? '',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black),
-                    ),
+              TableCell(
+                child: Container(
+                  padding: const EdgeInsets.all(5),
+                  color: Colors.white,
+                  child: Center(
+                    child: CustomText(
+                        message: semester[i].semesterDescription ?? '',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black),
                   ),
                 ),
               ),
-              InkWell(
-                onTap: () {},
-                child: TableCell(
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
-                    color: Colors.white,
-                    child: Center(
-                      child: CustomText(
-                          message:
-                              '${formatDate(semester[i].startDate.toString())}',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black),
-                    ),
+              TableCell(
+                child: Container(
+                  padding: const EdgeInsets.all(5),
+                  color: Colors.white,
+                  child: Center(
+                    child: CustomText(
+                        message:
+                            '${formatDate(semester[i].startDate.toString())}',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black),
                   ),
                 ),
               ),
-              InkWell(
-                onTap: () {},
-                child: TableCell(
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
-                    color: Colors.white,
-                    child: Center(
-                      child: CustomText(
-                          message:
-                              '${formatDate(semester[i].endDate.toString())}',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black),
-                    ),
+              TableCell(
+                child: Container(
+                  padding: const EdgeInsets.all(5),
+                  color: Colors.white,
+                  child: Center(
+                    child: CustomText(
+                        message:
+                            '${formatDate(semester[i].endDate.toString())}',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black),
                   ),
                 ),
               ),
-              InkWell(
-                onTap: () {
-                  editSemester(
-                      context,
-                      semester[i].semesterName ?? '',
-                      semester[i].semesterDescription ?? '',
-                      semester[i].startDate ?? '',
-                      semester[i].endDate ?? '',
-                      semester[i].semesterID ?? 0);
-                },
-                child: TableCell(
+              TableCell(
+                child: InkWell(
+                  onTap: (){
+                     editSemester(
+                    context,
+                    semester[i].semesterName ?? '',
+                    semester[i].semesterDescription ?? '',
+                    semester[i].startDate ?? '',
+                    semester[i].endDate ?? '',
+                    semester[i].semesterID ?? 0);
+                  },
                   child: Container(
                     padding: const EdgeInsets.all(5),
                     color: Colors.white,
@@ -607,11 +579,12 @@ class _SemesterPageState extends State<SemesterPage> {
                   ),
                 ),
               ),
-              InkWell(
-                onTap: () {
-                  _deleteSemesterDialog(semester, i);
-                },
-                child: TableCell(
+              TableCell(
+                child: InkWell(
+                  onTap: (){
+                _deleteSemesterDialog(semester, i);
+              
+                  },
                   child: Container(
                     padding: const EdgeInsets.all(5),
                     color: Colors.white,

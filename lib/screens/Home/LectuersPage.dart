@@ -786,12 +786,12 @@ class _LecturerPageState extends State<LecturerPage> {
                   ),
                 ),
               ),
-              InkWell(
-                onTap: () {
-                  editLecturer(context, teacherList[i].teacherID ?? '',
-                      teacherList[i].teacherName ?? '', i);
-                },
-                child: TableCell(
+              TableCell(
+                child: InkWell(
+                  onTap: (){
+               editLecturer(context, teacherList[i].teacherID ?? '',
+                    teacherList[i].teacherName ?? '', i);
+                  },
                   child: Container(
                     padding: const EdgeInsets.all(5),
                     color: Colors.white,
@@ -809,11 +809,12 @@ class _LecturerPageState extends State<LecturerPage> {
                   ),
                 ),
               ),
-              InkWell(
-                onTap: () {
-                  _deleteLecturerDialog(teacherList, i);
-                },
-                child: TableCell(
+              TableCell(
+                child: InkWell(
+                  onTap: (){
+                _deleteLecturerDialog(teacherList, i);
+              
+                  },
                   child: Container(
                     padding: const EdgeInsets.all(5),
                     color: Colors.white,

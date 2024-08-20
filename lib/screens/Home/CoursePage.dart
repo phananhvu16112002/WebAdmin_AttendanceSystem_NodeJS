@@ -138,7 +138,6 @@ class _CoursePageState extends State<CoursePage> {
             },
           );
         }
-
       } else {
         await _progressDialog.hide();
         if (mounted) {
@@ -499,15 +498,15 @@ class _CoursePageState extends State<CoursePage> {
         for (int i = startIndex; i < endIndex; i++)
           TableRow(
             children: [
-              InkWell(
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (builder) => DetailCourseScreen(
-                              courseModel: studentAttendance[i])));
-                },
-                child: TableCell(
+              TableCell(
+                child: InkWell(
+                  onTap:() {
+                    Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (builder) => DetailCourseScreen(
+                            courseModel: studentAttendance[i])));
+                  },
                   child: Container(
                     padding: const EdgeInsets.all(5),
                     color: Colors.white,
@@ -521,16 +520,16 @@ class _CoursePageState extends State<CoursePage> {
                   ),
                 ),
               ),
-              InkWell(
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (builder) => DetailCourseScreen(
-                                courseModel: studentAttendance[i],
-                              )));
-                },
-                child: TableCell(
+              TableCell(
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (builder) => DetailCourseScreen(
+                                  courseModel: studentAttendance[i],
+                                )));
+                  },
                   child: Container(
                     color: Colors.white,
                     padding: const EdgeInsets.all(5),
@@ -544,15 +543,15 @@ class _CoursePageState extends State<CoursePage> {
                   ),
                 ),
               ),
-              InkWell(
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (builder) => DetailCourseScreen(
-                              courseModel: studentAttendance[i])));
-                },
-                child: TableCell(
+              TableCell(
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (builder) => DetailCourseScreen(
+                                courseModel: studentAttendance[i])));
+                  },
                   child: Container(
                     padding: const EdgeInsets.all(5),
                     color: Colors.white,
@@ -566,15 +565,15 @@ class _CoursePageState extends State<CoursePage> {
                   ),
                 ),
               ),
-              InkWell(
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (builder) => DetailCourseScreen(
-                              courseModel: studentAttendance[i])));
-                },
-                child: TableCell(
+              TableCell(
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (builder) => DetailCourseScreen(
+                                courseModel: studentAttendance[i])));
+                  },
                   child: Container(
                     padding: const EdgeInsets.all(5),
                     color: Colors.white,
@@ -627,18 +626,18 @@ class _CoursePageState extends State<CoursePage> {
               //     ),
               //   ),
               // ),
-              InkWell(
-                onTap: () {
-                  editCourse(
-                      context,
-                      studentAttendance[i].courseID ?? '',
-                      studentAttendance[i].courseName ?? '',
-                      studentAttendance[i].totalWeeks ?? 0,
-                      studentAttendance[i].requiredWeeks ?? 0,
-                      studentAttendance[i].credit ?? 0,
-                      i);
-                },
-                child: TableCell(
+              TableCell(
+                child: InkWell(
+                  onTap: () {
+                    editCourse(
+                        context,
+                        studentAttendance[i].courseID ?? '',
+                        studentAttendance[i].courseName ?? '',
+                        studentAttendance[i].totalWeeks ?? 0,
+                        studentAttendance[i].requiredWeeks ?? 0,
+                        studentAttendance[i].credit ?? 0,
+                        i);
+                  },
                   child: Container(
                     padding: const EdgeInsets.all(5),
                     color: Colors.white,
@@ -656,11 +655,11 @@ class _CoursePageState extends State<CoursePage> {
                   ),
                 ),
               ),
-              InkWell(
-                onTap: () {
-                  _deleteCourseDialog(studentAttendance, i);
-                },
-                child: TableCell(
+              TableCell(
+                child: InkWell(
+                  onTap: () {
+                    _deleteCourseDialog(studentAttendance, i);
+                  },
                   child: Container(
                     padding: const EdgeInsets.all(5),
                     color: Colors.white,

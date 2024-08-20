@@ -892,15 +892,15 @@ class _DetailPageState extends State<DetailPage> {
                   ),
                 ),
               ),
-              InkWell(
-                onTap: () {
-                  editStudentDialog(
-                      context,
-                      studentAttendance[i].studentID ?? '',
-                      studentAttendance[i].studentName ?? '',
-                      i);
-                },
-                child: TableCell(
+              TableCell(
+                child: InkWell(
+                  onTap: (){
+                    editStudentDialog(
+                    context,
+                    studentAttendance[i].studentID ?? '',
+                    studentAttendance[i].studentName ?? '',
+                    i);
+                  },
                   child: Container(
                     padding: const EdgeInsets.all(5),
                     color: Colors.white,
@@ -918,11 +918,12 @@ class _DetailPageState extends State<DetailPage> {
                   ),
                 ),
               ),
-              InkWell(
-                onTap: () {
-                  _deleteStudentDialog(studentAttendance ?? [], i);
-                },
-                child: TableCell(
+              TableCell(
+                child: InkWell(
+                  onTap: (){
+                _deleteStudentDialog(studentAttendance ?? [], i);
+              
+                  },
                   child: Container(
                     padding: const EdgeInsets.all(5),
                     color: Colors.white,

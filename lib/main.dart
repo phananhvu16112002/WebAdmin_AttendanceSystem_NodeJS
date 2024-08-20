@@ -2,12 +2,8 @@ import 'dart:ui';
 
 import 'package:admin_attendancesystem_nodejs/common/colors/color.dart';
 import 'package:admin_attendancesystem_nodejs/providers/selected_detail_provider.dart';
-import 'package:admin_attendancesystem_nodejs/screens/Authentication/WelcomePage.dart';
 import 'package:admin_attendancesystem_nodejs/screens/Home/HomePage.dart';
-import 'package:admin_attendancesystem_nodejs/screens/Home/PreviewExcel.dart';
-import 'package:admin_attendancesystem_nodejs/screens/Home/PreviewStudent.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart' ; 
 import 'package:provider/provider.dart';
 
 void main() {

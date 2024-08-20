@@ -727,177 +727,175 @@ class _HomePageState extends State<HomePage> {
     return SizedBox(
       width: MediaQuery.of(context).size.width - 250,
       height: MediaQuery.of(context).size.height,
-      child: Expanded(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.only(left: 20, right: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(
-                  height: 10,
-                ),
-                const CustomText(
-                    message: 'Home',
-                    fontSize: 25,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.primaryText),
-                const SizedBox(
-                  height: 10,
-                ),
-                SizedBox(
-                  width: MediaQuery.of(context).size.width - 250,
-                  // height: 130,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: customBoxInformation(
-                            'Classes', 'assets/icons/class.png', totalClass),
-                      ),
-                      const SizedBox(
-                        width: 40,
-                      ), // Show ben duoi theo class
-                      Expanded(
-                        child: customBoxInformation(
-                            'Courses', 'assets/images/course.png', totalCourse),
-                      ),
-                      const SizedBox(
-                        width: 40,
-                      ),
-                      Expanded(
-                        child: customBoxInformation('Students',
-                            'assets/icons/student.png', totalStudent),
-                      ),
-                      const SizedBox(
-                        width: 40,
-                      ),
-                      Expanded(
-                        child: customBoxInformation('Lectuers',
-                            'assets/icons/lectuer.png', totalLecturer),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Row(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.only(left: 20, right: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(
+                height: 10,
+              ),
+              const CustomText(
+                  message: 'Home',
+                  fontSize: 25,
+                  fontWeight: FontWeight.w800,
+                  color: Color.fromARGB(255, 40, 27, 27)),
+              const SizedBox(
+                height: 10,
+              ),
+              SizedBox(
+                width: MediaQuery.of(context).size.width - 250,
+                // height: 130,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CustomText(
-                        message: 'Select semester',
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.primaryText),
-                    const SizedBox(
-                      width: 10,
+                    Expanded(
+                      child: customBoxInformation(
+                          'Classes', 'assets/icons/class.png', totalClass),
                     ),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                              color: AppColors.primaryText.withOpacity(0.2))),
-                      child: DropdownButton<String>(
-                        focusColor: Colors.transparent,
-                        underline: Container(),
-                        value: dropdownvalue,
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            dropdownvalue = newValue!;
-                          });
-                          selectedSemesterID = semesters
-                              .firstWhere((semester) =>
-                                  semester.semesterName == newValue)
-                              .semesterID;
-                        },
-                        iconSize: 15,
-                        menuMaxHeight: 150,
-                        style: TextStyle(fontSize: 15),
-                        items: semesters
-                            .map<DropdownMenuItem<String>>((Semester value) {
-                          return DropdownMenuItem<String>(
-                            value: value.semesterName,
-                            child: Text(value.semesterName ?? ''),
-                          );
-                        }).toList(),
-                      ),
+                    const SizedBox(
+                      width: 40,
+                    ), // Show ben duoi theo class
+                    Expanded(
+                      child: customBoxInformation(
+                          'Courses', 'assets/images/course.png', totalCourse),
+                    ),
+                    const SizedBox(
+                      width: 40,
+                    ),
+                    Expanded(
+                      child: customBoxInformation('Students',
+                          'assets/icons/student.png', totalStudent),
+                    ),
+                    const SizedBox(
+                      width: 40,
+                    ),
+                    Expanded(
+                      child: customBoxInformation('Lectuers',
+                          'assets/icons/lectuer.png', totalLecturer),
                     ),
                   ],
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
-                FutureBuilder(
-                  future: API(context).getClasses(page, selectedSemesterID),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      if (snapshot.data != null) {
-                        ClassData? classesData = snapshot.data;
-                        return Column(
-                          children: [
-                            GridView.builder(
-                                shrinkWrap: true,
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 3,
-                                        crossAxisSpacing: 10,
-                                        childAspectRatio: 2.1,
-                                        mainAxisSpacing: 10),
-                                itemCount: classesData?.classes?.length,
-                                itemBuilder: (context, index) {
-                                  ClassModel? data =
-                                      classesData!.classes?[index];
-                                  var randomBanner = Random().nextInt(3);
-
-                                  return InkWell(
-                                    onTap: () {
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (builder) => DetailPage(
-                                                    classModel:
-                                                        data ?? ClassModel(),
-                                                  )));
-                                    },
-                                    mouseCursor: SystemMouseCursors.click,
-                                    child: customClass(
-                                        data?.classID ?? '',
-                                        data?.course?.courseName ?? '',
-                                        data?.classType ?? '',
-                                        data?.group ?? '',
-                                        data?.subGroup ?? '',
-                                        data?.shiftNumber ?? 0,
-                                        data?.roomNumber ?? '',
-                                        'assets/images/banner$randomBanner.jpg',
-                                        data?.teacher?.teacherName ?? '',
-                                        data?.teacher?.teacherID ?? '',
-                                        550),
-                                  );
-                                }),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            _buildPaginationButtons(classesData?.totalPage ?? 1)
-                          ],
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              Row(
+                children: [
+                  CustomText(
+                      message: 'Select semester',
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.primaryText),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                            color: AppColors.primaryText.withOpacity(0.2))),
+                    child: DropdownButton<String>(
+                      focusColor: Colors.transparent,
+                      underline: Container(),
+                      value: dropdownvalue,
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          dropdownvalue = newValue!;
+                        });
+                        selectedSemesterID = semesters
+                            .firstWhere((semester) =>
+                                semester.semesterName == newValue)
+                            .semesterID;
+                      },
+                      iconSize: 15,
+                      menuMaxHeight: 150,
+                      style: TextStyle(fontSize: 15),
+                      items: semesters
+                          .map<DropdownMenuItem<String>>((Semester value) {
+                        return DropdownMenuItem<String>(
+                          value: value.semesterName,
+                          child: Text(value.semesterName ?? ''),
                         );
-                      }
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    } else if (snapshot.connectionState ==
-                        ConnectionState.waiting) {
-                      return const Center(
-                          child: CircularProgressIndicator(
-                        value: 5,
-                      ));
-                    } else {
-                      return const Center(child: Text('Data is not available'));
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              FutureBuilder(
+                future: API(context).getClasses(page, selectedSemesterID),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    if (snapshot.data != null) {
+                      ClassData? classesData = snapshot.data;
+                      return Column(
+                        children: [
+                          GridView.builder(
+                              shrinkWrap: true,
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 3,
+                                      crossAxisSpacing: 10,
+                                      childAspectRatio: 2.1,
+                                      mainAxisSpacing: 10),
+                              itemCount: classesData?.classes?.length,
+                              itemBuilder: (context, index) {
+                                ClassModel? data =
+                                    classesData!.classes?[index];
+                                var randomBanner = Random().nextInt(3);
+      
+                                return InkWell(
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (builder) => DetailPage(
+                                                  classModel:
+                                                      data ?? ClassModel(),
+                                                )));
+                                  },
+                                  mouseCursor: SystemMouseCursors.click,
+                                  child: customClass(
+                                      data?.classID ?? '',
+                                      data?.course?.courseName ?? '',
+                                      data?.classType ?? '',
+                                      data?.group ?? '',
+                                      data?.subGroup ?? '',
+                                      data?.shiftNumber ?? 0,
+                                      data?.roomNumber ?? '',
+                                      'assets/images/banner$randomBanner.jpg',
+                                      data?.teacher?.teacherName ?? '',
+                                      data?.teacher?.teacherID ?? '',
+                                      550),
+                                );
+                              }),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          _buildPaginationButtons(classesData?.totalPage ?? 1)
+                        ],
+                      );
                     }
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (snapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    return const Center(
+                        child: CircularProgressIndicator(
+                      value: 5,
+                    ));
+                  } else {
                     return const Center(child: Text('Data is not available'));
-                  },
-                ),
-              ],
-            ),
+                  }
+                  return const Center(child: Text('Data is not available'));
+                },
+              ),
+            ],
           ),
         ),
       ),
