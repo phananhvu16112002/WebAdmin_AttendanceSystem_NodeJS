@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 class Authentication{
   String baseURl = Constants.baseUrl;
   Future<String> login(String email, String password) async {
-    var URL = 'http://$baseURl:8080/api/admin/login';
+    var URL = '$baseURl/api/admin/login';
     var request = {'email': email, 'password': password};
     var body = json.encode(request);
     var headers = {

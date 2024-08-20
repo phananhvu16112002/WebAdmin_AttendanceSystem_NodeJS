@@ -1,3 +1,3 @@
 class Constants{
-  static const String baseUrl = '192.168.0.105';
+  static const String baseUrl = 'https://k8sattendancesystem.org';
 }

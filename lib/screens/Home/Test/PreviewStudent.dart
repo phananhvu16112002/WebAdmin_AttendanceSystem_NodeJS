@@ -90,8 +90,9 @@ class _PreviewStudentExcelState extends State<PreviewStudentExcel> {
       _clearExcelData();
       _index = 1;
       List<int> excelBytes = result.files.single.bytes!;
+      print("file excel class read");
       var excel = Excel.decodeBytes(excelBytes);
-
+      print("oke");
       var table = excel.tables.keys.first;
       var isFirstRow = true;
       for (var row in excel.tables[table]!.rows) {
@@ -106,8 +107,8 @@ class _PreviewStudentExcelState extends State<PreviewStudentExcel> {
         }
       }
 
-      _normalizeRowLengths();
-      setState(() {});
+      // _normalizeRowLengths();
+      // setState(() {});
     }
   }
 
