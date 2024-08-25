@@ -104,12 +104,14 @@ class _HomePageState extends State<HomePage> {
     _fetchTotalModel = API(context).getTotalHomePage();
     _fetchTotalModel.then((value) {
       if (value != null) {
-        setState(() {
-          totalLecturer = value.totalTeachers ?? 0;
-          totalStudent = value.totalStudents ?? 0;
-          totalClass = value.totalClasses ?? 0;
-          totalCourse = value.totalCourses ?? 0;
-        });
+        if (mounted) {
+          setState(() {
+            totalLecturer = value.totalTeachers ?? 0;
+            totalStudent = value.totalStudents ?? 0;
+            totalClass = value.totalClasses ?? 0;
+            totalCourse = value.totalCourses ?? 0;
+          });
+        }
       }
     });
   }
@@ -118,13 +120,21 @@ class _HomePageState extends State<HomePage> {
     _fetchSemester = API(context).getSemester();
     _fetchSemester.then((value) {
       if (value.isNotEmpty) {
-        setState(() {
-          semesters = value;
-          dropdownvalue = semesters.first.semesterName ?? '';
-          selectedSemesterID = semesters.first.semesterID;
-        });
+        if (mounted) {
+          setState(() {
+            semesters = value;
+            dropdownvalue = semesters.first.semesterName ?? '';
+            selectedSemesterID = semesters.first.semesterID;
+          });
+        }
       }
     });
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
   }
 
   @override
@@ -330,7 +340,16 @@ class _HomePageState extends State<HomePage> {
                       const PopupMenuItem(
                         child: Text("My Profile"),
                       ),
-                      const PopupMenuItem(
+                      PopupMenuItem(
+                        onTap: () async {
+                          await SecureStorage().deleteSecureData('accessToken');
+                          await SecureStorage()
+                              .deleteSecureData('refreshToken');
+                          Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (builder) => const WelcomePage()));
+                        },
                         child: Text("Log Out"),
                       ),
                     ],
@@ -765,8 +784,8 @@ class _HomePageState extends State<HomePage> {
                       width: 40,
                     ),
                     Expanded(
-                      child: customBoxInformation('Students',
-                          'assets/icons/student.png', totalStudent),
+                      child: customBoxInformation(
+                          'Students', 'assets/icons/student.png', totalStudent),
                     ),
                     const SizedBox(
                       width: 40,
@@ -806,8 +825,8 @@ class _HomePageState extends State<HomePage> {
                           dropdownvalue = newValue!;
                         });
                         selectedSemesterID = semesters
-                            .firstWhere((semester) =>
-                                semester.semesterName == newValue)
+                            .firstWhere(
+                                (semester) => semester.semesterName == newValue)
                             .semesterID;
                       },
                       iconSize: 15,
@@ -845,10 +864,9 @@ class _HomePageState extends State<HomePage> {
                                       mainAxisSpacing: 10),
                               itemCount: classesData?.classes?.length,
                               itemBuilder: (context, index) {
-                                ClassModel? data =
-                                    classesData!.classes?[index];
+                                ClassModel? data = classesData!.classes?[index];
                                 var randomBanner = Random().nextInt(3);
-      
+
                                 return InkWell(
                                   onTap: () {
                                     Navigator.push(
